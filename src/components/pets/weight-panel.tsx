@@ -46,7 +46,7 @@ export function WeightPanel({
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
-      <div className="space-y-6 lg:col-span-3">
+      <div className="min-w-0 space-y-6 lg:col-span-3">
         <Card>
           <CardHeader>
             <CardTitle>Weight over time ({unit})</CardTitle>
@@ -100,8 +100,10 @@ export function WeightPanel({
               ) : null}
             </CardHeader>
             <CardContent>
-              {/* Doubles as the chart's accessible table view. */}
-              <table className="w-full text-sm">
+              {/* Doubles as the chart's accessible table view. Scrolls inside
+                  its own container so a long note never widens the page. */}
+              <div className="-mx-1 overflow-x-auto px-1">
+              <table className="w-full min-w-[22rem] text-sm">
                 <caption className="sr-only">Recorded weight entries, newest first</caption>
                 <thead>
                   <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -137,12 +139,13 @@ export function WeightPanel({
                   ))}
                 </tbody>
               </table>
+              </div>
             </CardContent>
           </Card>
         ) : null}
       </div>
 
-      <Card className="lg:col-span-2 lg:self-start">
+      <Card className="min-w-0 lg:col-span-2 lg:self-start">
         <CardHeader>
           <CardTitle>Log a weight</CardTitle>
         </CardHeader>

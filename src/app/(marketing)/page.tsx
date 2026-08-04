@@ -90,31 +90,31 @@ export default function LandingPage() {
             <HeroItem>
               {/* White copy over the scrim — the section owns a dark surface,
                   so it doesn't use the page's default foreground color. */}
-              <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
+              <h1 className="text-shadow-hero text-[2rem] font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Your pet&apos;s health, all in one place
               </h1>
             </HeroItem>
 
             <HeroItem>
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/85">
+              <p className="text-shadow-hero mt-4 max-w-xl text-base leading-relaxed text-white/90 sm:mt-5 sm:text-lg">
                 Petnote keeps vaccinations, medical history, weight and documents organized — and
                 gives every pet a QR tag that shows critical info to whoever finds them.
               </p>
             </HeroItem>
 
             <HeroItem>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <AnimatedCta>
+              <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row">
+                <AnimatedCta className="w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
                   <Button asChild size="lg" variant="accent">
                     <Link href="/signup">Start free — no card needed</Link>
                   </Button>
                 </AnimatedCta>
-                <AnimatedCta>
+                <AnimatedCta className="w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
                   <Button
                     asChild
                     size="lg"
                     variant="outline"
-                    className="border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
+                    className="border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
                   >
                     <Link href="#emergency">See Emergency Mode</Link>
                   </Button>
@@ -123,7 +123,7 @@ export default function LandingPage() {
             </HeroItem>
 
             <HeroItem>
-              <p className="mt-5 text-sm text-white/70">
+              <p className="text-shadow-hero mt-5 max-w-md text-sm text-white/80">
                 Free plan includes one pet, the full health calendar and an Emergency Mode QR code.
               </p>
             </HeroItem>
@@ -226,7 +226,7 @@ export default function LandingPage() {
             <div data-reveal>
               <HoverLift>
                 <Card className="h-full">
-                  <CardContent className="flex h-full flex-col p-7">
+                  <CardContent className="flex h-full flex-col p-6 sm:p-7">
                     <h3 className="text-lg font-semibold text-foreground">Free</h3>
                     <p className="mt-1 text-sm text-muted-foreground">Everything one pet needs.</p>
                     <p className="mt-5 text-4xl font-bold tracking-tight text-primary">
@@ -243,7 +243,12 @@ export default function LandingPage() {
                       ))}
                     </ul>
 
-                    <Button asChild variant="outline" size="lg" className="mt-7 w-full">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="mt-7 h-auto min-h-12 w-full whitespace-normal py-3 text-center"
+                    >
                       <Link href="/signup">Get started free</Link>
                     </Button>
                   </CardContent>
@@ -254,7 +259,7 @@ export default function LandingPage() {
             <div data-reveal>
               <HoverLift>
                 <Card className="h-full border-accent/50">
-                  <CardContent className="flex h-full flex-col p-7">
+                  <CardContent className="flex h-full flex-col p-6 sm:p-7">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-lg font-semibold text-foreground">Pro</h3>
                       <Badge variant="accent">Most popular</Badge>
@@ -281,9 +286,17 @@ export default function LandingPage() {
                       ))}
                     </ul>
 
-                    {/* Conversion point — the more energetic hover preset. */}
+                    {/* Conversion point — the more energetic hover preset.
+                        Full-width CTAs drop `whitespace-nowrap` and grow in
+                        height instead, so a long label wraps rather than
+                        forcing the card wider than a 320px screen. */}
                     <AnimatedCta intent="energetic" className="mt-7 w-full [&>*]:w-full">
-                      <Button asChild variant="accent" size="lg" className="w-full">
+                      <Button
+                        asChild
+                        variant="accent"
+                        size="lg"
+                        className="h-auto min-h-12 w-full whitespace-normal py-3 text-center"
+                      >
                         <Link href="/signup">Start free, upgrade any time</Link>
                       </Button>
                     </AnimatedCta>

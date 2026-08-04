@@ -40,7 +40,7 @@ export function MedicalPanel({
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
+        <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>Visits, surgeries & procedures</CardTitle>
             <CardDescription>The full history a new vet would want to see.</CardDescription>
@@ -97,7 +97,7 @@ export function MedicalPanel({
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <CardHeader>
             <CardTitle>Add a record</CardTitle>
           </CardHeader>
@@ -135,7 +135,7 @@ export function MedicalPanel({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
+        <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>Medications</CardTitle>
             <CardDescription>
@@ -165,7 +165,7 @@ export function MedicalPanel({
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <CardHeader>
             <CardTitle>Add a medication</CardTitle>
           </CardHeader>
@@ -237,9 +237,12 @@ function MedicationList({
             <RecordRow
               key={medication.id}
               id={medication.id}
-              className="flex items-start gap-2 py-3 first:pt-0 last:pb-0"
+              // Two action buttons plus a drug name squeeze badly under ~500px,
+              // so the actions drop onto their own line instead of crushing the
+              // name into three wrapped words.
+              className="flex flex-wrap items-start gap-x-2 gap-y-1 py-3 first:pt-0 last:pb-0"
             >
-              <div className="min-w-0 flex-1">
+              <div className="w-full min-w-0 sm:w-auto sm:flex-1">
                 <p className="font-medium text-foreground">{medication.name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {[medication.dosage, medication.frequency].filter(Boolean).join(" · ") || "No dosage recorded"}
@@ -250,20 +253,22 @@ function MedicationList({
                   </p>
                 ) : null}
               </div>
-              <form action={setMedicationActive}>
-                <input type="hidden" name="id" value={medication.id} />
-                <input type="hidden" name="pet_id" value={petId} />
-                <input type="hidden" name="active" value={medication.active ? "false" : "true"} />
-                <Button type="submit" variant="ghost" size="sm">
-                  {medication.active ? "Mark ended" : "Reactivate"}
-                </Button>
-              </form>
-              <DeleteButton
-                action={deleteMedication}
-                payload={{ id: medication.id, pet_id: petId }}
-                title="Delete this medication?"
-                description={`"${medication.name}" will be removed, including from Emergency Mode. This can't be undone.`}
-              />
+              <div className="ml-auto flex shrink-0 items-center gap-1">
+                <form action={setMedicationActive}>
+                  <input type="hidden" name="id" value={medication.id} />
+                  <input type="hidden" name="pet_id" value={petId} />
+                  <input type="hidden" name="active" value={medication.active ? "false" : "true"} />
+                  <Button type="submit" variant="ghost" size="sm">
+                    {medication.active ? "Mark ended" : "Reactivate"}
+                  </Button>
+                </form>
+                <DeleteButton
+                  action={deleteMedication}
+                  payload={{ id: medication.id, pet_id: petId }}
+                  title="Delete this medication?"
+                  description={`"${medication.name}" will be removed, including from Emergency Mode. This can't be undone.`}
+                />
+              </div>
             </RecordRow>
           ))}
         </RecordList>

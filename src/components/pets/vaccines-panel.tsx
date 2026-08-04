@@ -16,7 +16,7 @@ import { formatDate, todayIso } from "@/lib/format";
 export function VaccinesPanel({ petId, vaccines }: { petId: string; vaccines: Vaccine[] }) {
   return (
     <div className="grid gap-6 lg:grid-cols-5">
-      <Card className="lg:col-span-3">
+      <Card className="min-w-0 lg:col-span-3">
         <CardHeader>
           <CardTitle>Vaccination history</CardTitle>
           <CardDescription>
@@ -64,7 +64,7 @@ export function VaccinesPanel({ petId, vaccines }: { petId: string; vaccines: Va
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2">
+      <Card className="min-w-0 lg:col-span-2">
         <CardHeader>
           <CardTitle>Add a vaccine</CardTitle>
         </CardHeader>

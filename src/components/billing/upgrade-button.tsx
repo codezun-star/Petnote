@@ -85,7 +85,8 @@ export function UpgradeButton({ cycle, userId, email, label, className }: Upgrad
           type="button"
           variant="accent"
           size="lg"
-          className="w-full"
+          // Wraps instead of forcing its container wider on narrow screens.
+          className="h-auto min-h-12 w-full whitespace-normal py-3 text-center"
           onClick={openCheckout}
           disabled={disabled || !paddle}
         >

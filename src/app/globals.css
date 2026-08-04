@@ -119,6 +119,17 @@
   }
 
   /*
+   * Keeps hero copy legible over a photograph without darkening the photo.
+   * A scrim heavy enough to guarantee contrast on its own would wash the
+   * image out, so the text carries its own shadow instead.
+   */
+  .text-shadow-hero {
+    text-shadow:
+      0 1px 2px rgb(15 32 51 / 0.45),
+      0 2px 14px rgb(15 32 51 / 0.55);
+  }
+
+  /*
    * Draws attention to an overdue item without blinking. Animates opacity
    * only — no layout, no colour thrash — and pulses in the accent orange.
    */

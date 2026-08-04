@@ -34,7 +34,7 @@ export function DewormingPanel({
 }) {
   return (
     <div className="grid gap-6 lg:grid-cols-5">
-      <Card className="lg:col-span-3">
+      <Card className="min-w-0 lg:col-span-3">
         <CardHeader>
           <CardTitle>Deworming & parasite control</CardTitle>
           <CardDescription>
@@ -83,7 +83,7 @@ export function DewormingPanel({
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2">
+      <Card className="min-w-0 lg:col-span-2">
         <CardHeader>
           <CardTitle>Add a treatment</CardTitle>
         </CardHeader>

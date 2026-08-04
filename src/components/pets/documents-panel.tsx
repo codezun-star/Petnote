@@ -37,7 +37,7 @@ export function DocumentsPanel({
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
-      <Card className="lg:col-span-3">
+      <Card className="min-w-0 lg:col-span-3">
         <CardHeader>
           <CardTitle>Documents</CardTitle>
           <CardDescription>
@@ -92,7 +92,7 @@ export function DocumentsPanel({
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-2 lg:self-start">
+      <Card className="min-w-0 lg:col-span-2 lg:self-start">
         <CardHeader>
           <CardTitle>Upload a document</CardTitle>
           <CardDescription>

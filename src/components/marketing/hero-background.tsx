@@ -54,19 +54,22 @@ export function HeroBackground() {
 
       {/*
         Scrim. Strong enough behind the copy for white text to clear WCAG AA
-        against any photo, light enough elsewhere that the image reads as the
-        hero rather than as texture.
+        against any photo, and deliberately weak everywhere else — the animals
+        are the point of the image and they usually sit low and to the right.
 
-        The direction is responsive: on a narrow screen the copy spans the full
-        width, so a left-to-right gradient would dim the whole photo — there it
-        runs top-to-bottom instead, sitting behind the text block and letting
-        the lower part of the image come through.
+        The direction is responsive. Up to `lg` the copy spans most of the
+        width, so a side gradient would dim the whole photo; there it runs
+        top-to-bottom, heavy behind the text at the top and clearing by the
+        bottom. From `lg` the copy only occupies the left column, so the
+        gradient runs left-to-right and the right side stays almost clean.
       */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/85 via-primary/70 to-primary/60 sm:bg-gradient-to-r sm:from-primary/90 sm:via-primary/70 sm:to-primary/45" />
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-primary/20" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/88 via-primary/60 to-primary/25 lg:bg-gradient-to-r lg:from-primary/88 lg:via-primary/55 lg:to-primary/15" />
 
-      {/* Long, soft blend into the page background beneath the hero. */}
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent via-background/60 to-background" />
+      {/*
+        Short blend into the page background. Kept to 4rem: a taller fade
+        washes out whatever is standing at the bottom of the photo.
+      */}
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background" />
     </div>
   );
 }
