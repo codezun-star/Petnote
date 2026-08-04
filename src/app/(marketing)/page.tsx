@@ -11,8 +11,8 @@ import {
   Syringe,
 } from "lucide-react";
 
+import { HeroBackground } from "@/components/marketing/hero-background";
 import { HeroItem, HeroSequence } from "@/components/marketing/hero-sequence";
-import { HeroParallax } from "@/components/marketing/hero-parallax";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { AnimatedCta, HoverLift } from "@/components/motion/cta";
 import { Badge } from "@/components/ui/badge";
@@ -74,60 +74,60 @@ export default function LandingPage() {
       {/* Scroll-driven reveals for every [data-reveal] element below. */}
       <ScrollReveal />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 -top-32 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(38,207,198,0.18),transparent)]" />
-        <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:pb-24 lg:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <HeroSequence>
-              <HeroItem>
-                <Badge variant="fresh" className="mb-5">
-                  <ShieldCheck />
-                  Emergency Mode is free, forever
-                </Badge>
-              </HeroItem>
+      {/* Hero — full-bleed photo behind the whole section */}
+      <section className="relative isolate flex min-h-[36rem] items-center lg:min-h-[44rem]">
+        <HeroBackground />
 
-              <HeroItem>
-                <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-primary sm:text-5xl lg:text-6xl">
-                  Your pet&apos;s health, all in one place
-                </h1>
-              </HeroItem>
+        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
+          <HeroSequence className="max-w-2xl">
+            <HeroItem>
+              <Badge variant="fresh" className="mb-5">
+                <ShieldCheck />
+                Emergency Mode is free, forever
+              </Badge>
+            </HeroItem>
 
-              <HeroItem>
-                <p className="mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
-                  Petnote keeps vaccinations, medical history, weight and documents organized — and
-                  gives every pet a QR tag that shows critical info to whoever finds them.
-                </p>
-              </HeroItem>
+            <HeroItem>
+              {/* White copy over the scrim — the section owns a dark surface,
+                  so it doesn't use the page's default foreground color. */}
+              <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
+                Your pet&apos;s health, all in one place
+              </h1>
+            </HeroItem>
 
-              <HeroItem>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <AnimatedCta>
-                    <Button asChild size="lg">
-                      <Link href="/signup">Start free — no card needed</Link>
-                    </Button>
-                  </AnimatedCta>
-                  <AnimatedCta>
-                    <Button asChild size="lg" variant="outline">
-                      <Link href="#emergency">See Emergency Mode</Link>
-                    </Button>
-                  </AnimatedCta>
-                </div>
-              </HeroItem>
+            <HeroItem>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/85">
+                Petnote keeps vaccinations, medical history, weight and documents organized — and
+                gives every pet a QR tag that shows critical info to whoever finds them.
+              </p>
+            </HeroItem>
 
-              <HeroItem>
-                <p className="mt-5 text-sm text-muted-foreground">
-                  Free plan includes one pet, the full health calendar and an Emergency Mode QR code.
-                </p>
-              </HeroItem>
-            </HeroSequence>
+            <HeroItem>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <AnimatedCta>
+                  <Button asChild size="lg" variant="accent">
+                    <Link href="/signup">Start free — no card needed</Link>
+                  </Button>
+                </AnimatedCta>
+                <AnimatedCta>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
+                  >
+                    <Link href="#emergency">See Emergency Mode</Link>
+                  </Button>
+                </AnimatedCta>
+              </div>
+            </HeroItem>
 
-            <div className="relative">
-              <HeroParallax>
-                <HeroPreview />
-              </HeroParallax>
-            </div>
-          </div>
+            <HeroItem>
+              <p className="mt-5 text-sm text-white/70">
+                Free plan includes one pet, the full health calendar and an Emergency Mode QR code.
+              </p>
+            </HeroItem>
+          </HeroSequence>
         </div>
       </section>
 
@@ -316,63 +316,6 @@ export default function LandingPage() {
         </div>
       </section>
     </>
-  );
-}
-
-/** Stylised dashboard mock — illustration, not real data. */
-function HeroPreview() {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_20px_50px_-25px_rgba(23,55,92,0.4)]">
-      <div className="flex items-center gap-3">
-        <span className="flex size-12 items-center justify-center rounded-full bg-primary-soft text-2xl">
-          🐕
-        </span>
-        <div>
-          <p className="font-semibold text-foreground">Luna</p>
-          <p className="text-xs text-muted-foreground">Dog · Border Collie · 3y 2m old</p>
-        </div>
-        <Badge variant="danger" className="ml-auto">
-          Allergies
-        </Badge>
-      </div>
-
-      <div className="mt-5 space-y-2.5">
-        {[
-          { label: "Rabies booster", meta: "Vaccine", badge: "Due in 9 days", tone: "warning" as const },
-          { label: "Milbemax", meta: "Deworming", badge: "Due in 24 days", tone: "fresh" as const },
-          { label: "Annual check-up", meta: "Vet visit", badge: "Logged", tone: "outline" as const },
-        ].map((row) => (
-          <div
-            key={row.label}
-            className="flex items-center gap-3 rounded-xl border border-border bg-background/60 p-3"
-          >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
-              <Syringe className="size-4" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{row.label}</p>
-              <p className="text-xs text-muted-foreground">{row.meta}</p>
-            </div>
-            <Badge variant={row.tone}>{row.badge}</Badge>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-5 rounded-xl bg-primary p-4 text-primary-foreground">
-        <p className="text-xs uppercase tracking-wide opacity-75">Weight trend</p>
-        <p className="mt-1 text-2xl font-bold">18.4 kg</p>
-        <svg viewBox="0 0 200 44" className="mt-2 h-11 w-full" aria-hidden="true">
-          <polyline
-            points="4,34 40,29 76,31 112,22 148,18 192,12"
-            fill="none"
-            stroke="#26CFC6"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-    </div>
   );
 }
 

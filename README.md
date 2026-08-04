@@ -148,6 +148,16 @@ author: "The Petnote team"
 headers or the session on the server — that's why the header's signed-in state resolves in the
 browser via `AuthCta`.
 
+## Hero image
+
+The landing page hero uses a full-bleed background photo loaded from
+`public/hero-pets.jpg`. It isn't in the repo — drop your own file at that exact
+path and the hero picks it up with no code change. Until then the hero renders
+as solid brand navy.
+
+See `public/README.md` for the recommended dimensions, composition notes and how
+to adjust how much of the photo shows through the scrim.
+
 ## Animation
 
 Shared timings and easing live in `src/lib/motion.ts`; `prefers-reduced-motion` is honored globally
