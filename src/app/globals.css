@@ -1,0 +1,120 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Petnote design tokens.
+ *
+ * The four brand colors below are the single source of truth for the palette.
+ * Always reach for the semantic utilities they generate (`bg-primary`,
+ * `text-accent`, `border-border`, ...) rather than hardcoding hex values in
+ * components.
+ */
+:root {
+  /* Brand */
+  --brand-primary: #17375c; /* trust    — headers, primary buttons, nav, links */
+  --brand-accent: #f39a3d; /* energy   — secondary CTAs, highlights, badges  */
+  --brand-fresh: #26cfc6; /* care     — success states, positive indicators  */
+  --brand-background: #ecf6fc; /* light app background                      */
+
+  /* Derived brand tints/shades, kept in the same hue families */
+  --brand-primary-hover: #102a47;
+  --brand-primary-soft: #dce8f3;
+  --brand-accent-hover: #dd8629;
+  --brand-accent-soft: #fdeeda;
+  --brand-fresh-hover: #16b3ab;
+  --brand-fresh-soft: #d5f6f4;
+
+  /* Semantic surface + text scale */
+  --background: var(--brand-background);
+  --foreground: #0f2033;
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --popover: #ffffff;
+  --popover-foreground: var(--foreground);
+  --muted: #f2f7fb;
+  --muted-foreground: #5b7185;
+  --border: #d3e3f0;
+  --input: #cbdcec;
+  --ring: var(--brand-primary);
+
+  /* Feedback */
+  --success: var(--brand-fresh);
+  --success-foreground: #06403d;
+  --warning: var(--brand-accent);
+  --warning-foreground: #5b3708;
+  --danger: #c8402c;
+  --danger-foreground: #ffffff;
+
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--brand-primary);
+  --color-primary-hover: var(--brand-primary-hover);
+  --color-primary-soft: var(--brand-primary-soft);
+  --color-primary-foreground: #ffffff;
+
+  --color-accent: var(--brand-accent);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-accent-soft: var(--brand-accent-soft);
+  --color-accent-foreground: #3a2205;
+
+  --color-fresh: var(--brand-fresh);
+  --color-fresh-hover: var(--brand-fresh-hover);
+  --color-fresh-soft: var(--brand-fresh-soft);
+  --color-fresh-foreground: #06403d;
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Native date/number inputs inherit the brand color for their controls. */
+  input[type="date"],
+  input[type="number"] {
+    accent-color: var(--brand-primary);
+  }
+}
+
+@layer utilities {
+  /* Used by the print stylesheet on the emergency QR sheet. */
+  @media print {
+    .print\:hidden {
+      display: none !important;
+    }
+  }
+}

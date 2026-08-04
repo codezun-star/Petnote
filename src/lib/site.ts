@@ -1,0 +1,25 @@
+export const siteConfig = {
+  name: "Petnote",
+  tagline: "Your pet's health, all in one place",
+  description:
+    "Petnote keeps your pet's vaccinations, medical history, weight and documents organized — plus a free Emergency Mode QR code that shows critical info to whoever finds them.",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://petnote.codezun.com",
+} as const;
+
+/**
+ * Absolute URL for metadata, emails and QR payloads.
+ *
+ * Falls back to the Vercel-provided host so preview deployments generate QR
+ * codes that actually resolve.
+ */
+export function absoluteUrl(path: string = "/"): string {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined) ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
+    siteConfig.url;
+
+  return new URL(path, base).toString();
+}
