@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import { LayoutDebugger } from "@/components/debug/layout-debugger";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
@@ -48,8 +47,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="flex min-h-full flex-col font-sans">
         <MotionProvider>{children}</MotionProvider>
-        {/* Inert unless the URL carries ?debug=layout */}
-        <LayoutDebugger />
       </body>
     </html>
   );

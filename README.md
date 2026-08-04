@@ -151,12 +151,28 @@ browser via `AuthCta`.
 ## Hero image
 
 The landing page hero uses a full-bleed background photo loaded from
-`public/hero-pets.jpg`. It isn't in the repo — drop your own file at that exact
-path and the hero picks it up with no code change. Until then the hero renders
-as solid brand navy.
+`public/hero-pets.jpg`. Replacing that file is all it takes — no code change.
+If the file is missing the hero falls back to solid brand navy rather than
+breaking.
 
-See `public/README.md` for the recommended dimensions, composition notes and how
-to adjust how much of the photo shows through the scrim.
+Aim for a wide landscape shot around 2400 × 1350, under ~500 KB, with the
+animals grouped toward the centre-right and calmer space on the left where the
+headline sits. The photo is anchored to its bottom edge so the smallest animals
+stay in frame, and the crop comes off the sky.
+
+How much of the photo shows through is one line in
+`src/components/marketing/hero-background.tsx`:
+
+```tsx
+<div className="absolute inset-0 bg-gradient-to-b from-primary/88 ... lg:to-primary/15" />
+```
+
+Lower numbers show more photo. Keep the value behind the copy at `/80` or above
+so the white headline stays legible.
+
+> If you swap the image and the old one keeps appearing locally, clear
+> `.next/cache/images` — the Next image optimizer caches by path. Vercel
+> rebuilds it on each deploy.
 
 ## Animation
 

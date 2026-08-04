@@ -1,9 +1,9 @@
 "use client";
 
 import * as motionReact from "motion/react";
-import type { ComponentProps, ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { fadeUp, interactive, staggerContainer, transitions } from "@/lib/motion";
+import { fadeUp, staggerContainer, transitions } from "@/lib/motion";
 
 const { motion, useReducedMotion } = motionReact;
 
@@ -98,63 +98,6 @@ export function StaggerItem({
 
   return (
     <motion.div className={className} variants={fadeUp(distance, shouldReduce)}>
-      {children}
-    </motion.div>
-  );
-}
-
-/**
- * A list row that animates in and out with AnimatePresence.
- *
- * Height is animated alongside opacity here because collapsing the gap left by
- * a removed row is the whole point — a row that fades but leaves a hole reads
- * as a bug. Rows are the one place that trade-off is worth it.
- */
-export function AnimatedListItem({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  const shouldReduce = useReducedMotion() ?? false;
-
-  return (
-    <motion.div
-      layout={!shouldReduce}
-      className={className}
-      initial={{ opacity: 0, y: shouldReduce ? 0 : -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={
-        shouldReduce
-          ? { opacity: 0 }
-          : { opacity: 0, x: -12, height: 0, marginTop: 0, marginBottom: 0 }
-      }
-      transition={transitions.base}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-type InteractiveProps = ComponentProps<typeof motion.div> & {
-  children: ReactNode;
-  /** `subtle` for cards and default CTAs, `energetic` for upgrade prompts. */
-  intent?: keyof typeof interactive;
-};
-
-/** Wraps a card or button in hover/tap feedback. */
-export function Interactive({ children, intent = "subtle", ...props }: InteractiveProps) {
-  const shouldReduce = useReducedMotion() ?? false;
-  const preset = interactive[intent];
-
-  return (
-    <motion.div
-      whileHover={shouldReduce ? undefined : preset.hover}
-      whileTap={shouldReduce ? undefined : preset.tap}
-      transition={transitions.fast}
-      {...props}
-    >
       {children}
     </motion.div>
   );
