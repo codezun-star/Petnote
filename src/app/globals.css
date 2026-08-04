@@ -127,10 +127,43 @@
     overflow-x: hidden;
   }
 
+  /*
+   * iOS Safari frequently ignores `overflow-x` on the root alone, so body
+   * repeats it. `position: relative` is what makes iOS actually honour it.
+   * Verified after adding: both sticky headers still pin to the top.
+   */
+  body {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   @supports (overflow: clip) {
-    html {
+    html,
+    body {
       overflow-x: clip;
     }
+  }
+
+  /*
+   * Form controls carry an intrinsic width (about 20 characters, and more for
+   * `type="date"` on iOS). Left alone it becomes the minimum size of whatever
+   * flex or grid track holds them, which is a common source of a page that is
+   * wider than the phone.
+   */
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
   }
 
   body {

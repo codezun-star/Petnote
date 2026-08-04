@@ -7,7 +7,11 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
     <input
       type={type}
       className={cn(
-        "flex h-10 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none transition-colors",
+        // `min-w-0` matters: an <input> has an intrinsic width of roughly 20
+        // characters, and `type="date"` is wider still on iOS. Inside a flex
+        // or grid parent that intrinsic size becomes the track's minimum and
+        // pushes the whole layout wider than the screen.
+        "flex h-10 w-full min-w-0 max-w-full rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground shadow-none transition-colors",
         "placeholder:text-muted-foreground/70",
         "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20",
         "disabled:cursor-not-allowed disabled:opacity-60",

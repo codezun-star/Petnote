@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
 import { AuthCta } from "@/components/marketing/auth-cta";
+import { MobileMenu } from "@/components/marketing/mobile-menu";
 
 const LINKS = [
   { href: "/#features", label: "Features" },
   { href: "/#emergency", label: "Emergency Mode" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/blog", label: "Blog" },
-];
+] as const;
 
 export function SiteHeader() {
   return (
@@ -31,7 +32,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <AuthCta />
+          {/* Sign-in CTA is desktop-only; on mobile it lives inside the menu,
+              so the header keeps room for the logo and the menu button. */}
+          <div className="hidden items-center gap-2 md:flex">
+            <AuthCta />
+          </div>
+          <MobileMenu links={LINKS} />
         </div>
       </div>
     </header>
