@@ -66,10 +66,10 @@ export function HeroBackground() {
       <div className="absolute inset-0 bg-gradient-to-b from-primary/88 via-primary/60 to-primary/25 lg:bg-gradient-to-r lg:from-primary/88 lg:via-primary/55 lg:to-primary/15" />
 
       {/*
-        Short blend into the page background. Kept to 4rem: a taller fade
-        washes out whatever is standing at the bottom of the photo.
+        No fade at the bottom edge. Any blend into the page background lands on
+        the animals standing at the bottom of the photo and bleaches them, so
+        the section ends on a clean edge instead.
       */}
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background" />
     </div>
   );
 }

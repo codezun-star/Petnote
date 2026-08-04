@@ -97,6 +97,23 @@
     border-color: var(--border);
   }
 
+  /*
+   * Nothing may scroll the page sideways.
+   *
+   * `clip` rather than `hidden` on purpose: `hidden` turns the element into a
+   * scroll container, which silently breaks `position: sticky` on the headers.
+   * `clip` just refuses to scroll.
+   *
+   * This is a backstop, not the fix — individual overflow bugs (grid children
+   * missing min-w-0, non-wrapping buttons, wide tables) are still fixed at
+   * their source so content is never quietly cut off.
+   */
+  html,
+  body {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
