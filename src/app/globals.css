@@ -108,10 +108,29 @@
    * missing min-w-0, non-wrapping buttons, wide tables) are still fixed at
    * their source so content is never quietly cut off.
    */
-  html,
-  body {
-    overflow-x: clip;
-    max-width: 100%;
+  /*
+   * Nothing may scroll the page sideways.
+   *
+   * Applied to `html` only, and deliberately not to `body`. Overflow set on
+   * the root element propagates to the viewport, so `html` itself never
+   * becomes a scroll container and `position: sticky` on the headers keeps
+   * working. Putting it on `body` (or any wrapper) is what breaks sticky.
+   *
+   * `hidden` is the base because Safari only gained `overflow: clip` in 16,
+   * and an unsupported value silently does nothing — which is no use on the
+   * phones most likely to hit this. Where `clip` is available it is strictly
+   * better: it refuses to scroll without creating a scroll port at all.
+   *
+   * This is a backstop. Real overflow bugs are still fixed at their source.
+   */
+  html {
+    overflow-x: hidden;
+  }
+
+  @supports (overflow: clip) {
+    html {
+      overflow-x: clip;
+    }
   }
 
   body {

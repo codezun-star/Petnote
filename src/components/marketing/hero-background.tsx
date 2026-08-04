@@ -39,14 +39,28 @@ export function HeroBackground() {
   return (
     <div ref={ref} aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden bg-primary">
       {!failed ? (
-        <motion.div style={{ y }} className="absolute inset-0 h-[112%]">
+        /*
+         * Anchored to the *bottom*, not the top.
+         *
+         * The parallax layer is taller than the section, so some of the photo
+         * is always cropped. Top-anchoring cropped the bottom — exactly where
+         * the small animals stand (hamster, guinea pigs, rabbit), so they were
+         * cut off. Bottom-anchoring plus `object-bottom` keeps that row on
+         * screen and takes the crop off the top instead, which is sky.
+         *
+         * The overshoot is smaller below `lg`. A narrow, tall viewport zooms a
+         * landscape photo hard, so the same 12% hides much more of it — at
+         * phone widths it pushed everything up to the animals' feet. 4% keeps
+         * both the faces and the bottom row in frame.
+         */
+        <motion.div style={{ y }} className="absolute inset-x-0 bottom-0 h-[104%] lg:h-[112%]">
           <Image
             src={HERO_IMAGE}
             alt=""
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center"
+            className="object-cover object-bottom"
             onError={() => setFailed(true)}
           />
         </motion.div>
