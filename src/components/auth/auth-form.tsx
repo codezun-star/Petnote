@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { AnimatedFormMessage } from "@/components/motion/error-message";
+import { FadeIn } from "@/components/motion/primitives";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,33 +56,40 @@ export function AuthForm({
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       {state.error ? (
-        <Alert variant="danger">
-          <AlertDescription>{state.error}</AlertDescription>
-        </Alert>
+        <AnimatedFormMessage trigger={state}>
+          <Alert variant="danger">
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        </AnimatedFormMessage>
       ) : null}
 
       {state.notice ? (
-        <Alert variant="success">
-          <AlertDescription>{state.notice}</AlertDescription>
-        </Alert>
+        <AnimatedFormMessage trigger={state} variant="success">
+          <Alert variant="success">
+            <AlertDescription>{state.notice}</AlertDescription>
+          </Alert>
+        </AnimatedFormMessage>
       ) : null}
 
-      {fields.map((field) => (
-        <div key={field.name} className="space-y-1.5">
-          <Label htmlFor={field.name}>{field.label}</Label>
-          <Input
-            id={field.name}
-            name={field.name}
-            type={field.type}
-            placeholder={field.placeholder}
-            autoComplete={field.autoComplete}
-            required
-          />
-          {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
-        </div>
-      ))}
+      {/* Functional flow — a single quick fade, nothing that delays typing. */}
+      <FadeIn distance={0} className="space-y-4">
+        {fields.map((field) => (
+          <div key={field.name} className="space-y-1.5">
+            <Label htmlFor={field.name}>{field.label}</Label>
+            <Input
+              id={field.name}
+              name={field.name}
+              type={field.type}
+              placeholder={field.placeholder}
+              autoComplete={field.autoComplete}
+              required
+            />
+            {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
+          </div>
+        ))}
 
-      <SubmitButton label={submitLabel} pendingLabel={pendingLabel} />
+        <SubmitButton label={submitLabel} pendingLabel={pendingLabel} />
+      </FadeIn>
     </form>
   );
 }

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AlertTriangle, Phone, PawPrint, Pill, Stethoscope, User } from "lucide-react";
 
 import { Logo } from "@/components/brand/logo";
+import { FadeIn } from "@/components/motion/primitives";
 import type { EmergencyProfile } from "@/lib/database.types";
 import { SPECIES_LABELS } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -73,7 +74,13 @@ export default async function EmergencyPage(props: PageProps<"/emergency/[public
 
   return (
     <div className="min-h-dvh bg-background">
-      <div className="mx-auto w-full max-w-md px-4 py-8">
+      {/*
+        The calmest page in the app. Whoever is reading this is probably
+        stressed and looking for a phone number, so the only motion is a single
+        quick fade — no stagger, no scroll effects, nothing that draws the eye
+        away from the call buttons.
+      */}
+      <FadeIn distance={0} className="mx-auto w-full max-w-md px-4 py-8">
         <header className="mb-6 text-center">
           <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">
             <AlertTriangle className="size-3.5" />
@@ -197,7 +204,7 @@ export default async function EmergencyPage(props: PageProps<"/emergency/[public
             This page was shared by {profile.pet_name}&apos;s owner through Petnote.
           </p>
         </footer>
-      </div>
+      </FadeIn>
     </div>
   );
 }

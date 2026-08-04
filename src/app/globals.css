@@ -117,4 +117,41 @@
       display: none !important;
     }
   }
+
+  /*
+   * Draws attention to an overdue item without blinking. Animates opacity
+   * only — no layout, no colour thrash — and pulses in the accent orange.
+   */
+  .pulse-attention {
+    animation: petnote-pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes petnote-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.62;
+    }
+  }
+}
+
+/*
+ * Global prefers-reduced-motion fallback.
+ *
+ * Motion components honour this through `MotionConfig reducedMotion="user"`
+ * and GSAP checks it before building any timeline. This block covers the third
+ * category: plain CSS animations and transitions, including anything Radix or
+ * tw-animate-css injects.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

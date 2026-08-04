@@ -4,6 +4,8 @@ import { PawPrint, Plus, Sparkles } from "lucide-react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PetAvatar } from "@/components/dashboard/pet-avatar";
+import { HoverLift } from "@/components/motion/cta";
+import { StaggerItem, StaggerList } from "@/components/motion/primitives";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,37 +77,43 @@ export default async function PetsPage() {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {pets.map((pet) => {
             const age = formatAge(pet.date_of_birth);
             return (
-              <Card key={pet.id} className="transition-colors hover:border-primary/30">
-                <CardContent className="p-5">
-                  <Link href={`/dashboard/pets/${pet.id}`} className="flex items-start gap-4">
-                    <PetAvatar name={pet.name} photoUrl={pet.photo_url} size={56} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-semibold text-foreground">{pet.name}</p>
-                      <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                        {SPECIES_LABELS[pet.species]}
-                        {pet.breed ? ` · ${pet.breed}` : ""}
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {age ? <Badge variant="outline">{age}</Badge> : null}
-                        {pet.sex ? <Badge variant="outline">{SEX_LABELS[pet.sex]}</Badge> : null}
-                        {pet.current_weight ? (
-                          <Badge variant="outline">
-                            {formatWeight(pet.current_weight, pet.weight_unit)}
-                          </Badge>
-                        ) : null}
-                        {pet.allergies ? <Badge variant="danger">Allergies</Badge> : null}
-                      </div>
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
+              <StaggerItem key={pet.id}>
+                <HoverLift withShadow={false}>
+                  <Card className="h-full transition-colors hover:border-primary/30">
+                    <CardContent className="p-5">
+                      <Link href={`/dashboard/pets/${pet.id}`} className="flex items-start gap-4">
+                        <PetAvatar name={pet.name} photoUrl={pet.photo_url} size={56} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-semibold text-foreground">
+                            {pet.name}
+                          </p>
+                          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                            {SPECIES_LABELS[pet.species]}
+                            {pet.breed ? ` · ${pet.breed}` : ""}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {age ? <Badge variant="outline">{age}</Badge> : null}
+                            {pet.sex ? <Badge variant="outline">{SEX_LABELS[pet.sex]}</Badge> : null}
+                            {pet.current_weight ? (
+                              <Badge variant="outline">
+                                {formatWeight(pet.current_weight, pet.weight_unit)}
+                              </Badge>
+                            ) : null}
+                            {pet.allergies ? <Badge variant="danger">Allergies</Badge> : null}
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </HoverLift>
+              </StaggerItem>
             );
           })}
-        </div>
+        </StaggerList>
       )}
     </>
   );

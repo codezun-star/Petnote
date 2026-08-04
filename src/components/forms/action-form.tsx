@@ -3,6 +3,8 @@
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
+import { AnimatedFormMessage } from "@/components/motion/error-message";
+import { SuccessCheck } from "@/components/motion/success-check";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import type { ActionState } from "@/lib/actions/shared";
@@ -66,15 +68,20 @@ export function ActionForm({
   return (
     <form ref={formRef} action={formAction} className={cn("space-y-4", className)}>
       {state.error ? (
-        <Alert variant="danger">
-          <AlertDescription>{state.error}</AlertDescription>
-        </Alert>
+        <AnimatedFormMessage trigger={state}>
+          <Alert variant="danger">
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        </AnimatedFormMessage>
       ) : null}
 
       {state.success ? (
-        <Alert variant="success">
-          <AlertDescription>{state.success}</AlertDescription>
-        </Alert>
+        <AnimatedFormMessage trigger={state} variant="success">
+          <Alert variant="success">
+            <SuccessCheck className="mt-0.5 shrink-0" />
+            <AlertDescription>{state.success}</AlertDescription>
+          </Alert>
+        </AnimatedFormMessage>
       ) : null}
 
       {children}

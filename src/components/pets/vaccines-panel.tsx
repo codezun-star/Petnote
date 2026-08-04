@@ -4,6 +4,7 @@ import { DueBadge } from "@/components/dashboard/due-badge";
 import { ActionForm } from "@/components/forms/action-form";
 import { DeleteButton } from "@/components/forms/delete-button";
 import { Field, FieldGrid } from "@/components/forms/field";
+import { RecordList, RecordRow } from "@/components/motion/record-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -30,9 +31,13 @@ export function VaccinesPanel({ petId, vaccines }: { petId: string; vaccines: Va
               description="Add the last shot your pet received and Petnote will remind you when the next one is due."
             />
           ) : (
-            <ul className="divide-y divide-border">
+            <RecordList className="divide-y divide-border">
               {vaccines.map((vaccine) => (
-                <li key={vaccine.id} className="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
+                <RecordRow
+                  key={vaccine.id}
+                  id={vaccine.id}
+                  className="flex items-start gap-3 py-4 first:pt-0 last:pb-0"
+                >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium text-foreground">{vaccine.vaccine_type}</p>
@@ -52,9 +57,9 @@ export function VaccinesPanel({ petId, vaccines }: { petId: string; vaccines: Va
                     title="Delete this vaccine record?"
                     description={`"${vaccine.vaccine_type}" will be removed from the health history. This can't be undone.`}
                   />
-                </li>
+                </RecordRow>
               ))}
-            </ul>
+            </RecordList>
           )}
         </CardContent>
       </Card>

@@ -56,6 +56,21 @@ export function isWithinLimit(current: number, max: number | null): boolean {
   return max === null || current < max;
 }
 
+/**
+ * Display price for the marketing pricing table.
+ *
+ * The authoritative price lives in Paddle and is what the checkout charges;
+ * this is only the number shown on the landing page, kept in an env var so it
+ * is configured alongside the Paddle setup rather than hardcoded in source.
+ * If it's unset we fall back to copy that promises no specific figure.
+ */
+export function getDisplayPrice(): { monthly: string | null; yearly: string | null } {
+  return {
+    monthly: process.env.NEXT_PUBLIC_PRO_PRICE_MONTHLY_DISPLAY ?? null,
+    yearly: process.env.NEXT_PUBLIC_PRO_PRICE_YEARLY_DISPLAY ?? null,
+  };
+}
+
 /** Marketing copy for the pricing table. Prices themselves live in Paddle. */
 export const PLAN_FEATURES: Record<PlanId, string[]> = {
   free: [

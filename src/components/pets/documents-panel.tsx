@@ -4,6 +4,7 @@ import { FileText, Sparkles } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { DeleteButton } from "@/components/forms/delete-button";
 import { Field, SelectField } from "@/components/forms/field";
+import { RecordList, RecordRow } from "@/components/motion/record-list";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,9 +53,13 @@ export function DocumentsPanel({
               description="Upload the vaccination certificate or last blood panel so it's there when a vet asks."
             />
           ) : (
-            <ul className="divide-y divide-border">
+            <RecordList className="divide-y divide-border">
               {documents.map((document) => (
-                <li key={document.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                <RecordRow
+                  key={document.id}
+                  id={document.id}
+                  className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                >
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                     <FileText className="size-4" />
                   </span>
@@ -80,9 +85,9 @@ export function DocumentsPanel({
                     title="Delete this document?"
                     description={`"${document.file_name ?? "This file"}" will be permanently deleted from storage. This can't be undone.`}
                   />
-                </li>
+                </RecordRow>
               ))}
-            </ul>
+            </RecordList>
           )}
         </CardContent>
       </Card>

@@ -3,6 +3,7 @@ import { Pill, Stethoscope } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { DeleteButton } from "@/components/forms/delete-button";
 import { Field, FieldGrid, SelectField } from "@/components/forms/field";
+import { RecordList, RecordRow } from "@/components/motion/record-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,9 +53,13 @@ export function MedicalPanel({
                 description="Log vet visits, diagnoses and treatments so nothing lives only in your memory."
               />
             ) : (
-              <ul className="divide-y divide-border">
+              <RecordList className="divide-y divide-border">
                 {records.map((record) => (
-                  <li key={record.id} className="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
+                  <RecordRow
+                    key={record.id}
+                    id={record.id}
+                    className="flex items-start gap-3 py-4 first:pt-0 last:pb-0"
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium text-foreground">
@@ -85,9 +90,9 @@ export function MedicalPanel({
                       title="Delete this medical record?"
                       description="This entry will be removed from the medical history. This can't be undone."
                     />
-                  </li>
+                  </RecordRow>
                 ))}
-              </ul>
+              </RecordList>
             )}
           </CardContent>
         </Card>
@@ -227,9 +232,13 @@ function MedicationList({
       {medications.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
-        <ul className="divide-y divide-border">
+        <RecordList className="divide-y divide-border">
           {medications.map((medication) => (
-            <li key={medication.id} className="flex items-start gap-2 py-3 first:pt-0 last:pb-0">
+            <RecordRow
+              key={medication.id}
+              id={medication.id}
+              className="flex items-start gap-2 py-3 first:pt-0 last:pb-0"
+            >
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-foreground">{medication.name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
@@ -255,9 +264,9 @@ function MedicationList({
                 title="Delete this medication?"
                 description={`"${medication.name}" will be removed, including from Emergency Mode. This can't be undone.`}
               />
-            </li>
+            </RecordRow>
           ))}
-        </ul>
+        </RecordList>
       )}
     </div>
   );

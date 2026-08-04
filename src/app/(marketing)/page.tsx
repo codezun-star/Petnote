@@ -11,10 +11,14 @@ import {
   Syringe,
 } from "lucide-react";
 
+import { HeroItem, HeroSequence } from "@/components/marketing/hero-sequence";
+import { HeroParallax } from "@/components/marketing/hero-parallax";
+import { ScrollReveal } from "@/components/marketing/scroll-reveal";
+import { AnimatedCta, HoverLift } from "@/components/motion/cta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PLAN_FEATURES } from "@/lib/plans";
+import { PLAN_FEATURES, getDisplayPrice } from "@/lib/plans";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -63,47 +67,65 @@ const FEATURES = [
 ];
 
 export default function LandingPage() {
+  const price = getDisplayPrice();
+
   return (
     <>
+      {/* Scroll-driven reveals for every [data-reveal] element below. */}
+      <ScrollReveal />
+
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 -top-32 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(38,207,198,0.18),transparent)]" />
         <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:pb-24 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div data-hero-content>
-              <Badge variant="fresh" className="mb-5" data-hero-item>
-                <ShieldCheck />
-                Emergency Mode is free, forever
-              </Badge>
+            <HeroSequence>
+              <HeroItem>
+                <Badge variant="fresh" className="mb-5">
+                  <ShieldCheck />
+                  Emergency Mode is free, forever
+                </Badge>
+              </HeroItem>
 
-              <h1
-                data-hero-item
-                className="text-4xl font-bold leading-[1.1] tracking-tight text-primary sm:text-5xl lg:text-6xl"
-              >
-                Your pet&apos;s health, all in one place
-              </h1>
+              <HeroItem>
+                <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-primary sm:text-5xl lg:text-6xl">
+                  Your pet&apos;s health, all in one place
+                </h1>
+              </HeroItem>
 
-              <p data-hero-item className="mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
-                Petnote keeps vaccinations, medical history, weight and documents organized — and
-                gives every pet a QR tag that shows critical info to whoever finds them.
-              </p>
+              <HeroItem>
+                <p className="mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
+                  Petnote keeps vaccinations, medical history, weight and documents organized — and
+                  gives every pet a QR tag that shows critical info to whoever finds them.
+                </p>
+              </HeroItem>
 
-              <div data-hero-item className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" data-cta>
-                  <Link href="/signup">Start free — no card needed</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" data-cta>
-                  <Link href="#emergency">See Emergency Mode</Link>
-                </Button>
-              </div>
+              <HeroItem>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <AnimatedCta>
+                    <Button asChild size="lg">
+                      <Link href="/signup">Start free — no card needed</Link>
+                    </Button>
+                  </AnimatedCta>
+                  <AnimatedCta>
+                    <Button asChild size="lg" variant="outline">
+                      <Link href="#emergency">See Emergency Mode</Link>
+                    </Button>
+                  </AnimatedCta>
+                </div>
+              </HeroItem>
 
-              <p data-hero-item className="mt-5 text-sm text-muted-foreground">
-                Free plan includes one pet, the full health calendar and an Emergency Mode QR code.
-              </p>
-            </div>
+              <HeroItem>
+                <p className="mt-5 text-sm text-muted-foreground">
+                  Free plan includes one pet, the full health calendar and an Emergency Mode QR code.
+                </p>
+              </HeroItem>
+            </HeroSequence>
 
-            <div data-hero-visual className="relative">
-              <HeroPreview />
+            <div className="relative">
+              <HeroParallax>
+                <HeroPreview />
+              </HeroParallax>
             </div>
           </div>
         </div>
@@ -126,7 +148,7 @@ export default function LandingPage() {
             {FEATURES.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={feature.title} data-reveal className="h-full">
+                <Card key={feature.title} data-reveal className="h-full transition-colors hover:border-primary/30">
                   <CardContent className="p-6">
                     <span className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
                       <Icon className="size-5" />
@@ -174,9 +196,11 @@ export default function LandingPage() {
                 ))}
               </ul>
 
-              <Button asChild size="lg" className="mt-8" data-cta>
-                <Link href="/signup">Create your pet&apos;s tag</Link>
-              </Button>
+              <AnimatedCta className="mt-8">
+                <Button asChild size="lg">
+                  <Link href="/signup">Create your pet&apos;s tag</Link>
+                </Button>
+              </AnimatedCta>
             </div>
 
             <div data-reveal>
@@ -199,65 +223,77 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <Card data-reveal data-pricing-card className="h-full">
-              <CardContent className="flex h-full flex-col p-7">
-                <h3 className="text-lg font-semibold text-foreground">Free</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Everything one pet needs.
-                </p>
-                <p className="mt-5 text-4xl font-bold tracking-tight text-primary">
-                  $0
-                  <span className="text-base font-normal text-muted-foreground">/month</span>
-                </p>
+            <div data-reveal>
+              <HoverLift>
+                <Card className="h-full">
+                  <CardContent className="flex h-full flex-col p-7">
+                    <h3 className="text-lg font-semibold text-foreground">Free</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">Everything one pet needs.</p>
+                    <p className="mt-5 text-4xl font-bold tracking-tight text-primary">
+                      $0
+                      <span className="text-base font-normal text-muted-foreground">/month</span>
+                    </p>
 
-                <ul className="mt-6 flex-1 space-y-2.5">
-                  {PLAN_FEATURES.free.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
-                      <Check className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                    <ul className="mt-6 flex-1 space-y-2.5">
+                      {PLAN_FEATURES.free.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
+                          <Check className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
 
-                <Button asChild variant="outline" size="lg" className="mt-7 w-full" data-cta>
-                  <Link href="/signup">Get started free</Link>
-                </Button>
-              </CardContent>
-            </Card>
+                    <Button asChild variant="outline" size="lg" className="mt-7 w-full">
+                      <Link href="/signup">Get started free</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </HoverLift>
+            </div>
 
-            <Card data-reveal data-pricing-card className="h-full border-accent/50">
-              <CardContent className="flex h-full flex-col p-7">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-lg font-semibold text-foreground">Pro</h3>
-                  <Badge variant="accent">Most popular</Badge>
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  For multi-pet households and complete records.
-                </p>
-                <p className="mt-5 text-4xl font-bold tracking-tight text-primary">
-                  A few dollars
-                  <span className="block text-base font-normal text-muted-foreground">
-                    per month, billed monthly or yearly
-                  </span>
-                </p>
+            <div data-reveal>
+              <HoverLift>
+                <Card className="h-full border-accent/50">
+                  <CardContent className="flex h-full flex-col p-7">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-lg font-semibold text-foreground">Pro</h3>
+                      <Badge variant="accent">Most popular</Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      For multi-pet households and complete records.
+                    </p>
+                    <p className="mt-5 text-4xl font-bold tracking-tight text-primary">
+                      {price.monthly ?? "Simple pricing"}
+                      {price.monthly ? (
+                        <span className="text-base font-normal text-muted-foreground">/month</span>
+                      ) : null}
+                      <span className="mt-1 block text-base font-normal text-muted-foreground">
+                        {price.yearly ? `or ${price.yearly}/year` : "billed monthly or yearly"}
+                      </span>
+                    </p>
 
-                <ul className="mt-6 flex-1 space-y-2.5">
-                  {PLAN_FEATURES.pro.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
-                      <Check className="mt-0.5 size-4 shrink-0 text-fresh" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                    <ul className="mt-6 flex-1 space-y-2.5">
+                      {PLAN_FEATURES.pro.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
+                          <Check className="mt-0.5 size-4 shrink-0 text-fresh" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
 
-                <Button asChild variant="accent" size="lg" className="mt-7 w-full" data-cta data-upgrade-cta>
-                  <Link href="/signup">Start free, upgrade any time</Link>
-                </Button>
-                <p className="mt-3 text-center text-xs text-muted-foreground">
-                  Exact pricing is shown at checkout in your local currency.
-                </p>
-              </CardContent>
-            </Card>
+                    {/* Conversion point — the more energetic hover preset. */}
+                    <AnimatedCta intent="energetic" className="mt-7 w-full [&>*]:w-full">
+                      <Button asChild variant="accent" size="lg" className="w-full">
+                        <Link href="/signup">Start free, upgrade any time</Link>
+                      </Button>
+                    </AnimatedCta>
+                    <p className="mt-3 text-center text-xs text-muted-foreground">
+                      Exact pricing is shown at checkout in your local currency.
+                    </p>
+                  </CardContent>
+                </Card>
+              </HoverLift>
+            </div>
           </div>
         </div>
       </section>
@@ -272,9 +308,11 @@ export default function LandingPage() {
             Add their name and species, and you&apos;ll have a health record and an Emergency Mode
             QR code before your coffee gets cold.
           </p>
-          <Button asChild size="lg" className="mt-8" data-cta>
-            <Link href="/signup">Create your free account</Link>
-          </Button>
+          <AnimatedCta className="mt-8">
+            <Button asChild size="lg">
+              <Link href="/signup">Create your free account</Link>
+            </Button>
+          </AnimatedCta>
         </div>
       </section>
     </>

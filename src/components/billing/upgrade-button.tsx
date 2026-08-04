@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AnimatedCta } from "@/components/motion/cta";
 import { Button } from "@/components/ui/button";
 import { paddleConfig, type BillingCycle } from "@/lib/paddle/config";
 
@@ -78,17 +79,20 @@ export function UpgradeButton({ cycle, userId, email, label, className }: Upgrad
 
   return (
     <div className={className}>
-      <Button
-        type="button"
-        variant="accent"
-        size="lg"
-        className="w-full"
-        onClick={openCheckout}
-        disabled={disabled || !paddle}
-      >
-        <Sparkles />
-        {label ?? "Upgrade to Pro"}
-      </Button>
+      {/* Conversion point: the energetic hover preset, in accent orange. */}
+      <AnimatedCta intent="energetic" className="w-full [&>*]:w-full">
+        <Button
+          type="button"
+          variant="accent"
+          size="lg"
+          className="w-full"
+          onClick={openCheckout}
+          disabled={disabled || !paddle}
+        >
+          <Sparkles />
+          {label ?? "Upgrade to Pro"}
+        </Button>
+      </AnimatedCta>
       {disabled ? (
         <p className="mt-2 text-xs text-muted-foreground">
           Add your Paddle client token and price ids to enable checkout.

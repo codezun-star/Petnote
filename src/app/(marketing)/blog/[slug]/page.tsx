@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { ArrowLeft } from "lucide-react";
 
 import { mdxComponents } from "@/components/blog/mdx";
+import { FadeIn } from "@/components/motion/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPost, getPostSlugs } from "@/lib/blog";
@@ -68,8 +69,10 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
     ...(post.coverImage ? { image: post.coverImage } : {}),
   };
 
+  // Reading page: one gentle fade on load, and nothing scroll-driven that
+  // would compete with the text.
   return (
-    <article className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 lg:py-20" data-post-body>
+    <FadeIn as="article" distance={6} className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 lg:py-20">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -126,6 +129,6 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
           <Link href="/signup">Start free</Link>
         </Button>
       </aside>
-    </article>
+    </FadeIn>
   );
 }

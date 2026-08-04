@@ -4,6 +4,7 @@ import { DueBadge } from "@/components/dashboard/due-badge";
 import { ActionForm } from "@/components/forms/action-form";
 import { DeleteButton } from "@/components/forms/delete-button";
 import { Field, FieldGrid, SelectField } from "@/components/forms/field";
+import { RecordList, RecordRow } from "@/components/motion/record-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -48,9 +49,13 @@ export function DewormingPanel({
               description="Log the last deworming or flea treatment to start the reminder cycle."
             />
           ) : (
-            <ul className="divide-y divide-border">
+            <RecordList className="divide-y divide-border">
               {records.map((record) => (
-                <li key={record.id} className="flex items-start gap-3 py-4 first:pt-0 last:pb-0">
+                <RecordRow
+                  key={record.id}
+                  id={record.id}
+                  className="flex items-start gap-3 py-4 first:pt-0 last:pb-0"
+                >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium text-foreground">
@@ -71,9 +76,9 @@ export function DewormingPanel({
                     title="Delete this treatment record?"
                     description="This deworming record will be removed from the health history. This can't be undone."
                   />
-                </li>
+                </RecordRow>
               ))}
-            </ul>
+            </RecordList>
           )}
         </CardContent>
       </Card>

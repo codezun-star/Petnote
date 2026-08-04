@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { HoverLift } from "@/components/motion/cta";
+import { FadeIn } from "@/components/motion/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -27,7 +29,7 @@ export default function BlogIndexPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-14 sm:px-6 lg:py-20">
+    <FadeIn className="mx-auto w-full max-w-4xl px-4 py-14 sm:px-6 lg:py-20">
       <header className="mb-10">
         <h1 className="text-4xl font-bold tracking-tight text-primary">The Petnote blog</h1>
         <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
@@ -41,8 +43,9 @@ export default function BlogIndexPage() {
       ) : (
         <div className="grid gap-5">
           {posts.map((post) => (
-            <Card key={post.slug} data-blog-card className="transition-colors hover:border-primary/30">
-              <CardContent className="p-6">
+            <HoverLift key={post.slug}>
+              <Card className="h-full transition-colors hover:border-primary/30">
+                <CardContent className="p-6">
                 <Link href={`/blog/${post.slug}`} className="group block">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <time dateTime={post.date}>{formatLongDate(post.date)}</time>
@@ -72,9 +75,10 @@ export default function BlogIndexPage() {
                 </Link>
               </CardContent>
             </Card>
+            </HoverLift>
           ))}
         </div>
       )}
-    </div>
+    </FadeIn>
   );
 }

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { signOut } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
 import { DashboardNav } from "@/components/dashboard/nav";
+import { AnimatedCta } from "@/components/motion/cta";
+import { PageTransition } from "@/components/motion/page-transition";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PLAN_NAMES } from "@/lib/plans";
@@ -24,9 +26,12 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
             {account.plan === "pro" ? (
               <Badge variant="fresh">Pro</Badge>
             ) : (
-              <Button asChild size="sm" variant="accent" className="hidden sm:inline-flex">
-                <Link href="/dashboard/billing">Upgrade to Pro</Link>
-              </Button>
+              // Conversion point — the more energetic hover preset.
+              <AnimatedCta intent="energetic" className="hidden sm:inline-flex">
+                <Button asChild size="sm" variant="accent">
+                  <Link href="/dashboard/billing">Upgrade to Pro</Link>
+                </Button>
+              </AnimatedCta>
             )}
 
             <div className="hidden text-right sm:block">
@@ -58,7 +63,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
           <div className="mb-6 lg:hidden">
             <DashboardNav orientation="horizontal" />
           </div>
-          {children}
+          <PageTransition>{children}</PageTransition>
         </div>
       </div>
     </div>

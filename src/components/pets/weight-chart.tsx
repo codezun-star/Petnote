@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotion } from "motion/react";
 import {
   CartesianGrid,
   Line,
@@ -54,6 +55,8 @@ function WeightTooltip({ active, payload, unit }: TooltipRenderProps & { unit: s
 }
 
 export function WeightChart({ data, unit }: { data: WeightPoint[]; unit: string }) {
+  const shouldReduce = useReducedMotion() ?? false;
+
   // A line needs two points to be a line. One entry renders as a single marker,
   // which Recharts handles, but a domain with no spread looks broken — so pad it.
   const weights = data.map((point) => point.weight);
@@ -86,6 +89,11 @@ export function WeightChart({ data, unit }: { data: WeightPoint[]; unit: string 
             cursor={{ stroke: GRID_COLOR, strokeWidth: 1 }}
             content={(props) => <WeightTooltip {...props} unit={unit} />}
           />
+          {/*
+            The line draws itself left-to-right on first load, and eases to its
+            new shape when an entry is added. Skipped entirely under reduced
+            motion so the chart is simply there.
+          */}
           <Line
             type="monotone"
             dataKey="weight"
@@ -93,7 +101,9 @@ export function WeightChart({ data, unit }: { data: WeightPoint[]; unit: string 
             strokeWidth={2}
             dot={{ r: 4, fill: LINE_COLOR, strokeWidth: 0 }}
             activeDot={{ r: 6, fill: LINE_COLOR, stroke: "var(--card)", strokeWidth: 2 }}
-            isAnimationActive={false}
+            isAnimationActive={!shouldReduce}
+            animationDuration={shouldReduce ? 0 : 650}
+            animationEasing="ease-out"
           />
         </LineChart>
       </ResponsiveContainer>

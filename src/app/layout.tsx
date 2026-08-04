@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { MotionProvider } from "@/components/motion/motion-provider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -44,7 +45,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+      <body className="flex min-h-full flex-col font-sans">
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }
