@@ -41,9 +41,18 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The proxy runs ahead of every page, so anything that throws here 500s the
+  // whole site — including statically prerendered pages that would otherwise
+  // be served straight from the CDN. A malformed or stale auth cookie is
+  // enough to do it. Treat any failure as "not signed in" and let the route
+  // itself decide; RLS is the real boundary regardless.
+  let user = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch (error) {
+    console.error("[proxy] Session lookup failed", error);
+  }
 
   const { pathname } = request.nextUrl;
 

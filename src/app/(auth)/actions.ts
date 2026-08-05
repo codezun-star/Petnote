@@ -40,6 +40,67 @@ const signInSchema = z.object({
 });
 
 /**
+ * Coerces anything thrown or returned as an error into a plain string.
+ *
+ * Action state crosses the server/client boundary and is rendered directly.
+ * A non-string in there — Supabase occasionally returns a structured body
+ * rather than a plain `message` — makes React throw "Objects are not valid as
+ * a React child" *during render*, which surfaces as an opaque 500 page rather
+ * than a form error. Everything is flattened to text before it leaves here.
+ */
+function toMessage(error: unknown, fallback: string): string {
+  // Supabase hands back placeholders like "{}" or "[object Object]" when it
+  // can't parse an upstream body. Showing those to a user is worse than
+  // saying nothing.
+  const isUseless = (value: string) =>
+    !value.trim() || ["{}", "[]", "null", "undefined", "[object Object]"].includes(value.trim());
+
+  if (typeof error === "string") return isUseless(error) ? fallback : error;
+
+  if (error && typeof error === "object") {
+    const maybe = error as {
+      message?: unknown;
+      error_description?: unknown;
+      msg?: unknown;
+      status?: unknown;
+    };
+
+    for (const value of [maybe.message, maybe.error_description, maybe.msg]) {
+      if (typeof value === "string" && !isUseless(value)) return value;
+    }
+
+    // A 5xx from Supabase with no usable body almost always means a database
+    // trigger raised — most often because migrations haven't been applied to
+    // this project yet. Say so, rather than blaming the user's input.
+    if (maybe.status === 500) {
+      return "Supabase rejected the sign-up with a server error. This usually means the database migrations haven't been applied to this project yet.";
+    }
+  }
+
+  return fallback;
+}
+
+/**
+ * Wraps an action body so an unexpected throw becomes a readable form error.
+ *
+ * Without this, anything unhandled inside a Server Action returns a 500 and
+ * the user sees "a server error occurred" with nothing to act on.
+ */
+async function guard(
+  run: () => Promise<AuthFormState>,
+  fallback: string,
+): Promise<AuthFormState> {
+  try {
+    return await run();
+  } catch (error) {
+    // redirect() and notFound() signal control flow by throwing; let them pass.
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    console.error("[auth] Unhandled error", error);
+    return { error: toMessage(error, fallback) };
+  }
+}
+
+/**
  * Resolves a username to the email Supabase Auth actually signs in with.
  *
  * Runs through the service role because the underlying function is not
@@ -80,6 +141,10 @@ function safeRedirectPath(value: FormDataEntryValue | null): string {
 }
 
 export async function signUp(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  return guard(() => signUpImpl(formData), "We couldn't create your account. Please try again.");
+}
+
+async function signUpImpl(formData: FormData): Promise<AuthFormState> {
   const parsed = signUpSchema.safeParse({
     fullName: formData.get("fullName"),
     username: formData.get("username"),
@@ -114,7 +179,10 @@ export async function signUp(_prevState: AuthFormState, formData: FormData): Pro
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("[auth] Sign-up failed", error);
+    return { error: toMessage(error, "We couldn't create your account. Please try again.") };
+  }
 
   // When email confirmation is on, Supabase returns a user with no session.
   if (!data.session) {
@@ -127,6 +195,10 @@ export async function signUp(_prevState: AuthFormState, formData: FormData): Pro
 }
 
 export async function signIn(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  return guard(() => signInImpl(formData), "We couldn't log you in. Please try again.");
+}
+
+async function signInImpl(formData: FormData): Promise<AuthFormState> {
   const parsed = signInSchema.safeParse({
     identifier: formData.get("identifier"),
     password: formData.get("password"),
@@ -158,6 +230,13 @@ export async function requestPasswordReset(
   _prevState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  return guard(
+    () => requestPasswordResetImpl(formData),
+    "We couldn't send that reset link. Please try again.",
+  );
+}
+
+async function requestPasswordResetImpl(formData: FormData): Promise<AuthFormState> {
   const parsed = emailSchema.safeParse(formData.get("email"));
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Enter a valid email address." };
