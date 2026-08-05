@@ -1,41 +1,48 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 type LogoProps = {
   className?: string;
-  /** Renders the wordmark in white, for use on the primary-colored header. */
-  inverted?: boolean;
+  /**
+   * `horizontal` — icon beside the wordmark. For headers and any bar-shaped
+   * space, where the stacked lockup would shrink the wordmark to noise.
+   * `full` — the complete stacked lockup with the tagline. For places with
+   * vertical room: the footer, auth cards, the emergency page.
+   */
+  variant?: "horizontal" | "full";
+  /** Rendered height in px. Width follows the artwork's aspect ratio. */
+  height?: number;
+  /** Set on the one logo above the fold so it isn't lazy-loaded. */
+  priority?: boolean;
 };
 
-/**
- * Petnote wordmark: a paw pad drawn from the brand palette next to the name.
- */
-export function Logo({ className, inverted = false }: LogoProps) {
+// Intrinsic sizes of the exported artwork, needed so next/image can reserve
+// space and avoid layout shift.
+const VARIANTS = {
+  horizontal: { src: "/logo-horizontal.png", width: 801, height: 200 },
+  full: { src: "/logo-full.png", width: 642, height: 480 },
+} as const;
+
+export function Logo({
+  className,
+  variant = "horizontal",
+  height = 36,
+  priority = false,
+}: LogoProps) {
+  const art = VARIANTS[variant];
+  const width = Math.round((art.width / art.height) * height);
+
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
-      <svg
-        viewBox="0 0 32 32"
-        className="size-7 shrink-0"
-        aria-hidden="true"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect width="32" height="32" rx="9" fill={inverted ? "#ffffff" : "#17375C"} />
-        <ellipse cx="11.1" cy="12.4" rx="2.5" ry="3.1" fill="#26CFC6" />
-        <ellipse cx="16" cy="10.6" rx="2.5" ry="3.3" fill="#26CFC6" />
-        <ellipse cx="20.9" cy="12.4" rx="2.5" ry="3.1" fill="#26CFC6" />
-        <path
-          d="M16 16.4c3.4 0 6.1 2.5 6.1 5.2 0 2.1-1.7 3.4-4 3.4-1 0-1.5-.3-2.1-.3s-1.1.3-2.1.3c-2.3 0-4-1.3-4-3.4 0-2.7 2.7-5.2 6.1-5.2Z"
-          fill="#F39A3D"
-        />
-      </svg>
-      <span
-        className={cn(
-          "text-lg font-bold tracking-tight",
-          inverted ? "text-white" : "text-primary",
-        )}
-      >
-        Petnote
-      </span>
-    </span>
+    <Image
+      src={art.src}
+      alt="Petnote"
+      width={width}
+      height={height}
+      priority={priority}
+      className={cn("h-auto w-auto object-contain", className)}
+      style={{ height, width }}
+      sizes={`${width}px`}
+    />
   );
 }

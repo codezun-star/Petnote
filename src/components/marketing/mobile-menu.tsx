@@ -80,7 +80,7 @@ export function MobileMenu({ links }: { links: readonly NavLink[] }) {
           </DialogPrimitive.Description>
 
           <div className="flex items-center justify-between">
-            <Logo />
+            <Logo height={32} />
             <DialogPrimitive.Close asChild>
               <Button variant="ghost" size="icon" aria-label="Close menu">
                 <X />

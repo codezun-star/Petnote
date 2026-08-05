@@ -19,7 +19,7 @@ export default function EmergencyNotFound() {
         <Link href="/">Go to Petnote</Link>
       </Button>
       <div className="mt-10">
-        <Logo />
+        <Logo variant="full" height={80} />
       </div>
     </div>
   );

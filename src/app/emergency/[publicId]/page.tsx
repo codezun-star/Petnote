@@ -198,7 +198,7 @@ export default async function EmergencyPage(props: PageProps<"/emergency/[public
 
         <footer className="mt-8 text-center">
           <Link href="/" className="inline-flex" aria-label="Petnote home">
-            <Logo />
+            <Logo variant="full" height={72} />
           </Link>
           <p className="mt-2 text-xs text-muted-foreground">
             This page was shared by {profile.pet_name}&apos;s owner through Petnote.

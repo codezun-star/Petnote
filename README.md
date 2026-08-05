@@ -174,6 +174,47 @@ so the white headline stays legible.
 > `.next/cache/images` — the Next image optimizer caches by path. Vercel
 > rebuilds it on each deploy.
 
+## Brand assets
+
+The master logo lives at `assets/brand/petnotelogo.png` — outside `public/` so
+the 2 MB original is never served. Three optimized variants are generated from
+it into `public/`:
+
+| File | Where it's used |
+| --- | --- |
+| `logo-horizontal.png` | Headers and the mobile menu — the stacked lockup is unreadable in a 64px bar, so this places the icon beside the wordmark |
+| `logo-full.png` | Footer, auth pages, emergency page, 404 — anywhere with vertical room for the tagline |
+| `logo-mark.png` | Source for the favicon and PWA icons |
+
+Pick the variant through the `Logo` component rather than importing an image
+directly:
+
+```tsx
+<Logo />                                 // horizontal, 36px tall
+<Logo variant="full" height={96} />      // full stacked lockup
+```
+
+## PWA
+
+The app is installable. That needs four things, all in place:
+
+- `src/app/manifest.ts` → served at `/manifest.webmanifest`
+- 192px and 512px icons, plus `maskable` variants so Android doesn't drop the
+  icon into a white box
+- `public/sw.js`, registered by `RegisterServiceWorker` in production only
+- HTTPS, which Vercel provides
+
+The service worker is deliberately narrow. It only touches same-origin GETs,
+**never caches HTML** — dashboard pages are per-user and the emergency page
+carries someone's phone number — and caches only content-hashed build output
+and brand art. Navigations are network-first and fall back to `/offline`.
+
+`sw.js`, the manifest and `/icons` are excluded from the proxy matcher.
+Running them through session refresh would attach `Set-Cookie` and `no-store`
+to files the browser must cache, which breaks registration and install.
+
+Bumping `VERSION` in `sw.js` invalidates the old cache on next activation.
+
 ## Animation
 
 Shared timings and easing live in `src/lib/motion.ts`; `prefers-reduced-motion` is honored globally

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export default function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
-      <Logo className="mb-8" />
+      <Logo variant="full" height={88} className="mb-8" />
       <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">404</p>
       <h1 className="mt-2 text-2xl font-bold text-foreground">We couldn&apos;t find that page</h1>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">

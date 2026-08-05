@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="px-6 py-6">
         <Link href="/" aria-label="Petnote home">
-          <Logo />
+          <Logo variant="full" height={72} priority />
         </Link>
       </header>
       <main className="flex flex-1 items-start justify-center px-6 pb-16 pt-4 sm:items-center sm:pt-0">

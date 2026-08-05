@@ -19,7 +19,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/dashboard" aria-label="Petnote dashboard">
-            <Logo />
+            <Logo priority />
           </Link>
 
           <div className="flex items-center gap-3">

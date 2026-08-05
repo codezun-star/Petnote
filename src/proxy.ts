@@ -63,9 +63,15 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Everything except static assets, image files and the Paddle webhook
-     * (which authenticates itself with a signature and has no session).
+     * Everything except:
+     *  - static assets and image files
+     *  - the Paddle webhook, which authenticates itself with a signature and
+     *    carries no session
+     *  - the PWA surface. The service worker, manifest and icons must be
+     *    served plainly; running them through session refresh attaches
+     *    Set-Cookie and no-store headers to files the browser needs to cache,
+     *    which breaks registration and install.
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml|icons/|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

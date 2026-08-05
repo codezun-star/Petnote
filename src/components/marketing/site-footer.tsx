@@ -8,7 +8,7 @@ export function SiteFooter() {
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-xs">
-            <Logo />
+            <Logo variant="full" height={96} />
             <p className="mt-3 text-sm text-muted-foreground">
               Your pet&apos;s vaccinations, medical history, weight and documents — organized, and
               ready when it matters.
