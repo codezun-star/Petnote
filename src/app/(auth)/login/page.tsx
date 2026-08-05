@@ -31,11 +31,12 @@ export default async function LoginPage(props: PageProps<"/login">) {
           pendingLabel="Logging in…"
           fields={[
             {
-              name: "email",
-              label: "Email",
-              type: "email",
-              placeholder: "you@example.com",
-              autoComplete: "email",
+              name: "identifier",
+              label: "Username",
+              type: "text",
+              placeholder: "alexrivera",
+              autoComplete: "username",
+              hint: "You can also use the email address on your account.",
             },
             {
               name: "password",

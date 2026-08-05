@@ -34,11 +34,20 @@ export default function SignUpPage() {
               autoComplete: "name",
             },
             {
+              name: "username",
+              label: "Username",
+              type: "text",
+              placeholder: "alexrivera",
+              autoComplete: "username",
+              hint: "This is what you'll log in with. Letters, numbers, dots, hyphens and underscores.",
+            },
+            {
               name: "email",
               label: "Email",
               type: "email",
               placeholder: "you@example.com",
               autoComplete: "email",
+              hint: "Used for reminders and account recovery.",
             },
             {
               name: "password",

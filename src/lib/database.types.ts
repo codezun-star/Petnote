@@ -22,6 +22,8 @@ export type SubscriptionStatus = "active" | "trialing" | "past_due" | "paused" |
 
 export type OwnerProfile = {
   id: string;
+  /** Public handle used to log in. Unique, case-insensitive. */
+  username: string | null;
   full_name: string | null;
   phone: string | null;
   emergency_contact_name: string | null;
@@ -210,6 +212,15 @@ export type Database = {
       mark_reminders_sent: {
         Args: { vaccine_ids: string[]; deworming_ids: string[] };
         Returns: undefined;
+      };
+      /** Service role only — maps a public handle to a private email address. */
+      email_for_username: {
+        Args: { lookup_username: string };
+        Returns: string | null;
+      };
+      is_username_available: {
+        Args: { candidate: string };
+        Returns: boolean;
       };
     };
     Enums: Record<never, never>;

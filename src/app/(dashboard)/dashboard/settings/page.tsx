@@ -64,9 +64,18 @@ export default async function SettingsPage() {
                   />
                 </Field>
               </FieldGrid>
-              <Field label="Email" htmlFor="email" hint="Reminders are sent here. Contact support to change it.">
-                <Input id="email" value={account.email ?? ""} readOnly disabled />
-              </Field>
+              <FieldGrid>
+                <Field label="Username" htmlFor="username" hint="What you log in with.">
+                  <Input id="username" value={profile?.username ?? "—"} readOnly disabled />
+                </Field>
+                <Field
+                  label="Email"
+                  htmlFor="email"
+                  hint="Reminders are sent here. Contact support to change it."
+                >
+                  <Input id="email" value={account.email ?? ""} readOnly disabled />
+                </Field>
+              </FieldGrid>
             </div>
 
             <div className="space-y-4 border-t border-border pt-6">

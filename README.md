@@ -79,6 +79,29 @@ supabase db push
   but write-scoped to the owner's folder; `pet-documents` is fully private and served only through
   60-second signed URLs.
 
+## Authentication
+
+Users log in with a **username and password**. Supabase Auth only authenticates
+by email, so the username is resolved to its email server-side and that is what
+`signInWithPassword` receives. Email stays required on the account — it's what
+reminders and password resets go to.
+
+The resolver, `public.email_for_username()`, maps a public handle to a private
+email address, so it is `SECURITY DEFINER` and executable **only by the service
+role**. Nothing reachable from the browser can turn a username into an email.
+`public.is_username_available()` returns a bare boolean and is safe to expose
+to `anon` for the signup form.
+
+Two consequences worth knowing:
+
+- **`SUPABASE_SERVICE_ROLE_KEY` is now required for login**, not just for the
+  Paddle webhook. Without it, username logins fail (email logins still work).
+- The login field accepts a username *or* an email — people forget which handle
+  they picked, and rejecting a correct email would be a pointless dead end.
+
+Failed logins always return one message regardless of cause, so the form can't
+be used to probe which usernames exist.
+
 ## Plans
 
 Limits live in `src/lib/plans.ts` and are enforced **server-side** in the relevant Server Action —
