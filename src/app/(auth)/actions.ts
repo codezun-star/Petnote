@@ -88,24 +88,6 @@ export async function signIn(_prevState: AuthFormState, formData: FormData): Pro
   redirect(safeRedirectPath(formData.get("next")));
 }
 
-export async function signInWithGoogle(formData: FormData): Promise<void> {
-  const next = safeRedirectPath(formData.get("next"));
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: absoluteUrl(`/auth/callback?next=${encodeURIComponent(next)}`),
-    },
-  });
-
-  if (error || !data.url) {
-    redirect(`/login?error=${encodeURIComponent("Google sign-in is unavailable right now.")}`);
-  }
-
-  redirect(data.url);
-}
-
 export async function requestPasswordReset(
   _prevState: AuthFormState,
   formData: FormData,

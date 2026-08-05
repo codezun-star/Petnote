@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { signIn } from "@/app/(auth)/actions";
 import { AuthForm } from "@/components/auth/auth-form";
-import { GoogleButton } from "@/components/auth/google-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -47,14 +46,6 @@ export default async function LoginPage(props: PageProps<"/login">) {
             },
           ]}
         />
-
-        <div className="flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">or</span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <GoogleButton next={next} />
 
         <div className="space-y-2 text-center text-sm text-muted-foreground">
           <p>
