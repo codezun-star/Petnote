@@ -111,31 +111,56 @@ grant execute on function public.mark_reminders_sent(uuid[], uuid[]) to service_
 --   select vault.create_secret('<service-role-key>', 'service_role_key');
 -- ---------------------------------------------------------------------------
 
-create extension if not exists pg_cron with schema extensions;
-create extension if not exists pg_net with schema extensions;
-
+-- Everything below is wrapped so it can never abort the migration.
+--
+-- pg_cron and pg_net are not enabled on every project, and `cron.schedule`
+-- needs privileges a plain migration role may not have. Left bare, a failure
+-- here aborts `supabase db push` — and because migrations run in order, every
+-- *later* migration silently never applies. Reminders are a background nicety;
+-- they must not be able to hold up the schema the app actually runs on.
+--
+-- If this is skipped, the tables and functions above still exist. Enable the
+-- extensions under Database → Extensions and re-run `supabase db push` to
+-- pick the schedule up.
 do $$
 begin
-  perform cron.unschedule('petnote-daily-reminders');
+  create extension if not exists pg_cron with schema extensions;
+  create extension if not exists pg_net with schema extensions;
 exception
-  when others then null;
+  when others then
+    raise notice 'Petnote: could not enable pg_cron/pg_net (%). Reminder scheduling skipped; the rest of the schema is unaffected.', sqlerrm;
+    return;
 end;
 $$;
 
-select cron.schedule(
-  'petnote-daily-reminders',
-  '0 9 * * *', -- 09:00 UTC every day
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url')
-           || '/functions/v1/send-reminders',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer '
-        || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 30000
+do $$
+begin
+  -- Nothing to unschedule on a first run; a missing job is not an error.
+  begin
+    perform cron.unschedule('petnote-daily-reminders');
+  exception
+    when others then null;
+  end;
+
+  perform cron.schedule(
+    'petnote-daily-reminders',
+    '0 9 * * *', -- 09:00 UTC every day
+    $job$
+    select net.http_post(
+      url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url')
+             || '/functions/v1/send-reminders',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer '
+          || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key')
+      ),
+      body := '{}'::jsonb,
+      timeout_milliseconds := 30000
+    );
+    $job$
   );
-  $$
-);
+exception
+  when others then
+    raise notice 'Petnote: could not schedule the daily reminder job (%). Everything else applied normally.', sqlerrm;
+end;
+$$;

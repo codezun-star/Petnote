@@ -29,11 +29,24 @@ export async function requireAccount(): Promise<Account> {
 
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: subscription }] = await Promise.all([
+  const [profileResult, subscriptionResult] = await Promise.all([
     supabase.from("owner_profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase.from("subscriptions").select("*").eq("user_id", user.id).maybeSingle(),
   ]);
 
+  // Neither query is fatal — a missing profile or subscription row just means
+  // "no details yet" and "Free plan". But swallowing a real failure silently
+  // would quietly downgrade a paying user, or hide a missing migration behind
+  // an empty-looking account, so it gets logged.
+  if (profileResult.error) {
+    console.error("[account] Could not load owner profile", profileResult.error);
+  }
+  if (subscriptionResult.error) {
+    console.error("[account] Could not load subscription", subscriptionResult.error);
+  }
+
+  const profile = profileResult.data;
+  const subscription = subscriptionResult.data;
   const plan = resolvePlan(subscription);
 
   return {
