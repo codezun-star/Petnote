@@ -4,12 +4,14 @@ import Link from "next/link";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { Field, FieldGrid, SelectField } from "@/components/forms/field";
+import { FileInput } from "@/components/forms/file-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { ActionState } from "@/lib/actions/shared";
 import type { Pet } from "@/lib/database.types";
 import { SPECIES_LABELS } from "@/lib/format";
+import { MAX_UPLOAD_BYTES } from "@/lib/plans";
 
 const SPECIES_OPTIONS = Object.entries(SPECIES_LABELS).map(([value, label]) => ({ value, label }));
 
@@ -122,9 +124,13 @@ export function PetForm({ action, pet, submitLabel, cancelHref }: PetFormProps) 
         <Field
           label="Photo"
           htmlFor="photo"
-          hint="JPEG, PNG, WebP or GIF, up to 5 MB. Appears on the Emergency Mode page."
+          hint="Optional — JPEG, PNG, WebP or GIF, up to 4 MB. You can add or change it any time. Appears on the Emergency Mode page."
         >
-          <Input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+          <FileInput
+            name="photo"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            maxBytes={MAX_UPLOAD_BYTES}
+          />
         </Field>
       </FieldGrid>
 

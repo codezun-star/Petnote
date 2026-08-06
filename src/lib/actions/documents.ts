@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { isWithinLimit } from "@/lib/plans";
+import { MAX_UPLOAD_BYTES, isWithinLimit } from "@/lib/plans";
 import { countDocuments, requireAccount } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { assertPetOwnership, failure, firstIssue, ok, uuid, type ActionState } from "./shared";
 
 const DOCUMENT_BUCKET = "pet-documents";
-const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+const MAX_DOCUMENT_BYTES = MAX_UPLOAD_BYTES;
 const ALLOWED_MIME_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -54,7 +54,7 @@ export async function uploadDocument(
     return failure("Documents must be a PDF or an image (JPEG, PNG, WebP, HEIC).");
   }
   if (file.size > MAX_DOCUMENT_BYTES) {
-    return failure("Documents must be smaller than 10 MB.");
+    return failure("Documents must be smaller than 4 MB.");
   }
 
   const account = await requireAccount();

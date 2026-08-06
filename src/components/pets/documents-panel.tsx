@@ -4,17 +4,17 @@ import { FileText, Sparkles } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { DeleteButton } from "@/components/forms/delete-button";
 import { Field, SelectField } from "@/components/forms/field";
+import { FileInput } from "@/components/forms/file-input";
 import { RecordList, RecordRow } from "@/components/motion/record-list";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
 import { deleteDocument, uploadDocument } from "@/lib/actions/documents";
 import type { PetDocument } from "@/lib/database.types";
 import { DOCUMENT_TYPE_LABELS, formatFileSize, formatLongDate } from "@/lib/format";
-import type { PlanLimits } from "@/lib/plans";
+import { MAX_UPLOAD_BYTES, type PlanLimits } from "@/lib/plans";
 
 const DOCUMENT_TYPE_OPTIONS = Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({
   value,
@@ -119,13 +119,12 @@ export function DocumentsPanel({
             <ActionForm action={uploadDocument} submitLabel="Upload" pendingLabel="Uploading…" resetOnSuccess>
               <input type="hidden" name="pet_id" value={petId} />
 
-              <Field label="File" htmlFor="file" hint="PDF or image, up to 10 MB." required>
-                <Input
-                  id="file"
+              <Field label="File" htmlFor="file" hint="PDF or image, up to 4 MB." required>
+                <FileInput
                   name="file"
-                  type="file"
                   accept="application/pdf,image/jpeg,image/png,image/webp,image/heic"
                   required
+                  maxBytes={MAX_UPLOAD_BYTES}
                 />
               </Field>
 

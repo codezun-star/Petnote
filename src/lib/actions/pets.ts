@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import type { Pet } from "@/lib/database.types";
 import { countPets, requireAccount } from "@/lib/queries";
-import { isWithinLimit } from "@/lib/plans";
+import { MAX_UPLOAD_BYTES, isWithinLimit } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import {
   assertPetOwnership,
@@ -20,7 +20,7 @@ import {
 } from "./shared";
 
 const PHOTO_BUCKET = "pet-photos";
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_PHOTO_BYTES = MAX_UPLOAD_BYTES;
 const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 const petSchema = z.object({
@@ -78,7 +78,7 @@ async function uploadPhoto(file: File, userId: string, petId: string): Promise<s
     throw new Error("Photos must be a JPEG, PNG, WebP or GIF image.");
   }
   if (file.size > MAX_PHOTO_BYTES) {
-    throw new Error("Photos must be smaller than 5 MB.");
+    throw new Error("Photos must be smaller than 4 MB.");
   }
 
   const supabase = await createClient();

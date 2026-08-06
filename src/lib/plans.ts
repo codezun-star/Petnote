@@ -1,5 +1,15 @@
 import type { PlanId, Subscription } from "@/lib/database.types";
 
+/**
+ * Largest file that can be posted through a Server Action.
+ *
+ * Bounded by two ceilings, not by preference: Next caps Server Action bodies
+ * (raised to 4mb in next.config.ts) and Vercel caps a function's request body
+ * at 4.5 MB. Keep this, `serverActions.bodySizeLimit`, and the browser-side
+ * checks in step.
+ */
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+
 export type { PlanId };
 
 export type PlanLimits = {
