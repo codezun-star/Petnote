@@ -64,6 +64,16 @@ supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
+Or paste each file into the Supabase SQL editor **in filename order**. Order
+matters: later files depend on tables and functions the earlier ones create.
+
+Either way, run `supabase/verify.sql` afterwards. It changes nothing and
+reports every expected table, column, policy, function, trigger and storage
+bucket as OK or MISSING, with the migration that provides it. This is worth
+doing whenever migrations are applied by hand — a single statement failing
+partway through a file leaves a database that looks complete in the table list
+while missing columns or policies the app depends on.
+
 ### Security model
 
 - **Every table has RLS enabled.** A row is reachable only if the caller owns the pet it hangs off,
