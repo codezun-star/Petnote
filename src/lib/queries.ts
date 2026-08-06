@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import type { OwnerProfile, Pet, Subscription } from "@/lib/database.types";
 import { getLimits, resolvePlan, type PlanId, type PlanLimits } from "@/lib/plans";
@@ -21,11 +22,25 @@ export type Account = {
  * Every dashboard page calls this — the proxy redirect is only an optimistic
  * first pass, this is the check that actually gates rendering.
  */
-export async function requireAccount(): Promise<Account> {
+export const requireAccount = cache(async function requireAccount(): Promise<Account> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+
+  // The layout and the page both call this, and Next renders them in
+  // parallel. Two concurrent getUser() calls on an expiring token each try to
+  // redeem the same refresh token; the loser gets "Invalid Refresh Token:
+  // Already Used". React's cache() dedupes to one call per request, so the
+  // race cannot happen.
+  //
+  // getUser() is also wrapped: it reaches the network and parses cookies, and
+  // an exception here takes down the whole page rather than sending the
+  // visitor to log in again.
+  let user = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch (error) {
+    console.error("[account] Session lookup failed", error);
+  }
 
   if (!user) redirect("/login");
 
@@ -57,7 +72,7 @@ export async function requireAccount(): Promise<Account> {
     plan,
     limits: getLimits(plan),
   };
-}
+});
 
 /** All of the caller's pets, oldest first. RLS scopes this to the owner. */
 export async function listPets(): Promise<Pet[]> {
@@ -80,8 +95,15 @@ export async function getPet(petId: string): Promise<Pet | null> {
 
 export async function countPets(): Promise<number> {
   const supabase = await createClient();
-  const { count } = await supabase.from("pets").select("id", { count: "exact", head: true });
-  return count ?? 0;
+  // Deliberately not `head: true`: a HEAD request returns no body, and an
+  // error response on that path is awkward for the client to parse. The row
+  // set here is a handful of ids at most.
+  const { data, error } = await supabase.from("pets").select("id");
+  if (error) {
+    console.error("[account] Could not count pets", error);
+    return 0;
+  }
+  return data?.length ?? 0;
 }
 
 /** Documents are limited per account, not per pet, so this counts across pets. */
@@ -91,11 +113,12 @@ export async function countDocuments(): Promise<number> {
   const petIds = (pets ?? []).map((pet) => pet.id);
   if (petIds.length === 0) return 0;
 
-  const { count } = await supabase
-    .from("documents")
-    .select("id", { count: "exact", head: true })
-    .in("pet_id", petIds);
-  return count ?? 0;
+  const { data, error } = await supabase.from("documents").select("id").in("pet_id", petIds);
+  if (error) {
+    console.error("[account] Could not count documents", error);
+    return 0;
+  }
+  return data?.length ?? 0;
 }
 
 export type UpcomingItem = {
