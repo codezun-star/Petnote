@@ -2,8 +2,10 @@
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { ACCOUNT_DELETION_PHRASE } from "@/lib/account";
 import {
   PASSWORDS_DO_NOT_MATCH,
   confirmationMatches,
@@ -218,4 +220,162 @@ export async function changeEmail(
   return ok(
     `Almost there — open the confirmation link we emailed to ${parsed.data.email}. Check ${account.email} too: for security you may be asked to confirm from both. Your address changes once every link has been opened, so keep logging in with ${account.email} until then.`,
   );
+}
+
+/** Both buckets key objects by `<owner id>/<pet id>/<file>`. */
+const STORAGE_BUCKETS = ["pet-photos", "pet-documents"] as const;
+
+const STORAGE_PAGE_SIZE = 100;
+/** Enough for any plausible account, and a guard against a paging loop. */
+const STORAGE_MAX_PAGES = 200;
+
+/**
+ * Every entry under `prefix`, paged out, or `null` if storage couldn't be read.
+ *
+ * `null` and `[]` mean very different things to the caller: one is "this
+ * account has no files", the other is "we don't know what this account has",
+ * and deleting on the second would be deleting blind.
+ */
+async function listStorageEntries(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  bucket: string,
+  prefix: string,
+): Promise<{ name: string; id: string | null }[] | null> {
+  const entries: { name: string; id: string | null }[] = [];
+
+  for (let page = 0; page < STORAGE_MAX_PAGES; page += 1) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .list(prefix, { limit: STORAGE_PAGE_SIZE, offset: page * STORAGE_PAGE_SIZE });
+
+    if (error) {
+      console.error(`[account] Could not list ${bucket}/${prefix}`, error);
+      return null;
+    }
+
+    entries.push(...(data ?? []));
+    if (!data || data.length < STORAGE_PAGE_SIZE) return entries;
+  }
+
+  console.error(`[account] Gave up paging ${bucket}/${prefix} after ${STORAGE_MAX_PAGES} pages`);
+  return null;
+}
+
+/**
+ * Storage paths belonging to `userId` in `bucket`.
+ *
+ * Listed by prefix rather than read off `documents.storage_path` and
+ * `pets.photo_url`, because replacing a pet's photo leaves the previous object
+ * in the bucket with no row pointing at it. Deriving paths from the tables
+ * would tidy the referenced files and quietly leave those behind.
+ */
+async function listOwnedFiles(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  bucket: string,
+  userId: string,
+): Promise<string[] | null> {
+  const top = await listStorageEntries(supabase, bucket, userId);
+  if (top === null) return null;
+
+  const paths: string[] = [];
+
+  for (const entry of top) {
+    // Storage reports folders with a null id.
+    if (entry.id !== null) {
+      paths.push(`${userId}/${entry.name}`);
+      continue;
+    }
+
+    const nested = await listStorageEntries(supabase, bucket, `${userId}/${entry.name}`);
+    if (nested === null) return null;
+    for (const file of nested) {
+      if (file.id !== null) paths.push(`${userId}/${entry.name}/${file.name}`);
+    }
+  }
+
+  return paths;
+}
+
+const deleteAccountSchema = z.object({
+  confirmation: z.string().trim(),
+  currentPassword: z.string().min(1, "Enter your current password."),
+});
+
+/**
+ * Deletes the account and everything hanging off it.
+ *
+ * Three gates, because this is the one action nobody can undo: the exact
+ * confirmation word, typed out; the current password; and only then the
+ * delete itself.
+ *
+ * Order matters. Stored files go first and a failure there stops everything,
+ * because storage has no foreign key to `auth.users` and the database cascade
+ * therefore doesn't reach it. Deleting the account first would strand every
+ * pet photo in a public-read bucket — still fetchable at its URL, with no
+ * session left in existence that could ever clean it up. Losing files while
+ * the account survives is recoverable by retrying; the other way round is not.
+ */
+export async function deleteAccount(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = deleteAccountSchema.safeParse({
+    confirmation: formData.get("confirmation") ?? "",
+    currentPassword: formData.get("currentPassword") ?? "",
+  });
+
+  if (!parsed.success) return failure(firstIssue(parsed.error));
+
+  if (parsed.data.confirmation !== ACCOUNT_DELETION_PHRASE) {
+    return failure(
+      `Type ${ACCOUNT_DELETION_PHRASE} exactly as shown to confirm. Nothing has been deleted.`,
+    );
+  }
+
+  const account = await requireAccount();
+  if (!account.email) {
+    return failure("Your account has no email address on file, so we can't verify your password.");
+  }
+
+  if (!(await passwordMatches(account.email, parsed.data.currentPassword))) {
+    return failure("That isn't your current password. Nothing has been deleted.");
+  }
+
+  const supabase = await createClient();
+
+  for (const bucket of STORAGE_BUCKETS) {
+    const paths = await listOwnedFiles(supabase, bucket, account.userId);
+    if (paths === null) {
+      return failure(
+        "We couldn't reach your stored files, so nothing has been deleted. Please try again in a moment.",
+      );
+    }
+    if (paths.length === 0) continue;
+
+    const { error } = await supabase.storage.from(bucket).remove(paths);
+    if (error) {
+      console.error(`[account] Could not delete files from ${bucket}`, error);
+      return failure(
+        "We couldn't delete your stored files, so nothing has been deleted. Please try again in a moment.",
+      );
+    }
+  }
+
+  // The service role is required — a user cannot delete their own auth row.
+  // Everything in the database hangs off auth.users with `on delete cascade`,
+  // so this one call takes the profile, the pets and every record under them.
+  const { error } = await createAdminClient().auth.admin.deleteUser(account.userId);
+
+  if (error) {
+    console.error("[account] Account deletion failed", error);
+    return failure(
+      "We couldn't delete your account. Please try again, or contact support if this keeps happening.",
+    );
+  }
+
+  // The user this session belonged to no longer exists; this is what clears
+  // the cookies so the browser isn't left holding a dead session.
+  await supabase.auth.signOut();
+
+  redirect("/login?deleted=1");
 }

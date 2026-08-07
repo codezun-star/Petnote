@@ -167,6 +167,39 @@ Nothing in the database stores the email — it lives on `auth.users` — so the
 is no second copy to keep in sync. Reminders and `email_for_username()` both
 read through to `auth.users` and follow the change automatically.
 
+### Deleting an account
+
+Settings → Delete account. Three gates, because nothing here is recoverable:
+the word `DELETE` typed out in full, the current password, and only then the
+delete itself.
+
+**The database cascade does not cover storage.** Everything in Postgres hangs
+off `auth.users` with `on delete cascade` — the profile, the subscription, the
+pets, and every record under a pet — so deleting the auth user clears all of
+it in one statement. `storage.objects` has no foreign key to `auth.users` and
+is not part of that. Deleting the account on its own would leave every pet
+photo sitting in the **public-read** `pet-photos` bucket, still fetchable at
+its URL, with no session left in existence that could ever clean it up.
+
+So the action deletes stored files *first*, across both buckets, and **a
+failure there aborts the whole deletion** — the account stays exactly as it
+was and can be deleted again. The two failure modes are not symmetric: losing
+files while the account survives is recoverable by retrying, an orphaned
+public photo is not.
+
+Files are found by listing the `<owner id>/` prefix rather than by reading
+`documents.storage_path` and `pets.photo_url`. Replacing a pet's photo leaves
+the old object in the bucket with no row pointing at it, and a table-driven
+cleanup would tidy the referenced files while silently leaving those behind.
+
+Two things it deliberately does *not* do:
+
+- **Cancel the Paddle subscription.** Billing is Paddle's, and the webhook is
+  the only thing that writes `subscriptions`. A Pro account is warned in the
+  confirmation panel to cancel first, and the deletion still goes ahead.
+- **Soft delete.** `admin.deleteUser` is called without `shouldSoftDelete`, so
+  there is no shadow copy left behind.
+
 ## Plans
 
 Limits live in `src/lib/plans.ts` and are enforced **server-side** in the relevant Server Action —

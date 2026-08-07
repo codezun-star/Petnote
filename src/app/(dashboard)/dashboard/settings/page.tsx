@@ -7,7 +7,13 @@ import { Field, FieldGrid } from "@/components/forms/field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { changeEmail, changePassword, changeUsername } from "@/lib/actions/account";
+import { ACCOUNT_DELETION_PHRASE } from "@/lib/account";
+import {
+  changeEmail,
+  changePassword,
+  changeUsername,
+  deleteAccount,
+} from "@/lib/actions/account";
 import { updateOwnerProfile } from "@/lib/actions/profile";
 import { MIN_PASSWORD_LENGTH } from "@/lib/password";
 import { requireAccount } from "@/lib/queries";
@@ -286,6 +292,64 @@ export default async function SettingsPage(props: PageProps<"/dashboard/settings
                   type="password"
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  required
+                />
+              </Field>
+            </FieldGrid>
+          </ActionForm>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6 border-danger/40">
+        <CardContent className="p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-danger">
+            Delete account
+          </h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            This deletes your account and everything attached to it: every pet profile, vaccine and
+            deworming record, medical history, medication, weight entry, uploaded document and
+            photo. Any Emergency Mode QR code you&apos;ve printed stops working immediately. It
+            cannot be undone, and we can&apos;t get any of it back for you afterwards.
+          </p>
+
+          {account.plan === "pro" ? (
+            <Alert variant="warning" className="mb-4">
+              <AlertDescription>
+                Your Pro subscription is billed through Paddle and isn&apos;t cancelled by deleting
+                your account. Cancel it from the billing page first, or you&apos;ll keep being
+                charged for an account that no longer exists.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          <ActionForm
+            action={deleteAccount}
+            submitLabel="Delete my account"
+            pendingLabel="Deleting…"
+            submitVariant="danger"
+            className="space-y-4"
+          >
+            <FieldGrid>
+              <Field
+                label={`Type ${ACCOUNT_DELETION_PHRASE} to confirm`}
+                htmlFor="confirmation"
+                hint="In capitals, exactly as shown."
+              >
+                <Input
+                  id="confirmation"
+                  name="confirmation"
+                  placeholder={ACCOUNT_DELETION_PHRASE}
+                  autoComplete="off"
+                  required
+                />
+              </Field>
+              <Field label="Current password" htmlFor="deleteCurrentPassword">
+                <Input
+                  id="deleteCurrentPassword"
+                  name="currentPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
                   required
                 />
               </Field>
