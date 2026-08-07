@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ActionState } from "@/lib/actions/shared";
 import type { Pet } from "@/lib/database.types";
 import { SPECIES_LABELS } from "@/lib/format";
+import { PHOTO_COMPRESSION } from "@/lib/image-profiles";
 import { MAX_UPLOAD_BYTES } from "@/lib/plans";
 
 const SPECIES_OPTIONS = Object.entries(SPECIES_LABELS).map(([value, label]) => ({ value, label }));
@@ -124,12 +125,13 @@ export function PetForm({ action, pet, submitLabel, cancelHref }: PetFormProps) 
         <Field
           label="Photo"
           htmlFor="photo"
-          hint="Optional — JPEG, PNG, WebP or GIF, up to 4 MB. You can add or change it any time. Appears on the Emergency Mode page."
+          hint="Optional — JPEG, PNG, WebP or GIF, any size. Large photos are optimised in your browser before upload. You can add or change it any time. Appears on the Emergency Mode page."
         >
           <FileInput
             name="photo"
             accept="image/jpeg,image/png,image/webp,image/gif"
             maxBytes={MAX_UPLOAD_BYTES}
+            compress={PHOTO_COMPRESSION}
           />
         </Field>
       </FieldGrid>

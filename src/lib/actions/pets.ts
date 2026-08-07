@@ -6,7 +6,9 @@ import { z } from "zod";
 
 import type { Pet } from "@/lib/database.types";
 import { countPets, requireAccount } from "@/lib/queries";
+import { PHOTO_COMPRESSION } from "@/lib/image-profiles";
 import { MAX_UPLOAD_BYTES, isWithinLimit } from "@/lib/plans";
+import { optimiseImage } from "@/lib/server/image-compression";
 import { createClient } from "@/lib/supabase/server";
 import {
   assertPetOwnership,
@@ -68,7 +70,7 @@ function readPetForm(formData: FormData) {
 }
 
 /**
- * Uploads a pet photo and returns its public URL.
+ * Compresses a pet photo, uploads it and returns its public URL.
  *
  * The bucket is public read (Emergency Mode has no session), so the path is
  * namespaced by owner id — which is also what the storage policy checks.
@@ -82,11 +84,20 @@ async function uploadPhoto(file: File, userId: string, petId: string): Promise<s
   }
 
   const supabase = await createClient();
-  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+
+  // Second compression pass. The browser already did this for anyone using the
+  // form — `optimiseImage` returns null when it finds nothing left to do — but
+  // a request that skipped the form gets squeezed here instead of going into
+  // the bucket at full size.
+  const optimised = await optimiseImage(file, PHOTO_COMPRESSION);
+  const extension =
+    optimised?.extension ??
+    file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ??
+    "jpg";
   const path = `${userId}/${petId}/${crypto.randomUUID()}.${extension}`;
 
-  const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, file, {
-    contentType: file.type,
+  const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, optimised?.data ?? file, {
+    contentType: optimised?.contentType ?? file.type,
     upsert: false,
   });
 

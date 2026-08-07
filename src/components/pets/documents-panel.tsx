@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { deleteDocument, uploadDocument } from "@/lib/actions/documents";
 import type { PetDocument } from "@/lib/database.types";
 import { DOCUMENT_TYPE_LABELS, formatFileSize, formatLongDate } from "@/lib/format";
+import { DOCUMENT_COMPRESSION } from "@/lib/image-profiles";
 import { MAX_UPLOAD_BYTES, type PlanLimits } from "@/lib/plans";
 
 const DOCUMENT_TYPE_OPTIONS = Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({
@@ -119,12 +120,18 @@ export function DocumentsPanel({
             <ActionForm action={uploadDocument} submitLabel="Upload" pendingLabel="Uploading…" resetOnSuccess>
               <input type="hidden" name="pet_id" value={petId} />
 
-              <Field label="File" htmlFor="file" hint="PDF or image, up to 4 MB." required>
+              <Field
+                label="File"
+                htmlFor="file"
+                hint="PDF up to 4 MB, or an image of any size — scans are optimised before upload, gently enough to keep text and detail readable."
+                required
+              >
                 <FileInput
                   name="file"
                   accept="application/pdf,image/jpeg,image/png,image/webp,image/heic"
                   required
                   maxBytes={MAX_UPLOAD_BYTES}
+                  compress={DOCUMENT_COMPRESSION}
                 />
               </Field>
 

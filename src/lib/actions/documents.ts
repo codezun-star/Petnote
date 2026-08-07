@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { DOCUMENT_COMPRESSION } from "@/lib/image-profiles";
 import { MAX_UPLOAD_BYTES, isWithinLimit } from "@/lib/plans";
 import { countDocuments, requireAccount } from "@/lib/queries";
+import { optimiseImage, withExtension } from "@/lib/server/image-compression";
 import { createClient } from "@/lib/supabase/server";
 import { assertPetOwnership, failure, firstIssue, ok, uuid, type ActionState } from "./shared";
 
@@ -68,21 +70,32 @@ export async function uploadDocument(
   }
 
   const supabase = await createClient();
-  const safeName = sanitizeFileName(file.name);
+
+  // Second compression pass — see `optimiseImage`. PDFs and anything already
+  // within budget come back as null and are stored exactly as uploaded.
+  const optimised = await optimiseImage(file, DOCUMENT_COMPRESSION);
+  const safeName = optimised
+    ? withExtension(sanitizeFileName(file.name), optimised.extension)
+    : sanitizeFileName(file.name);
   const path = `${account.userId}/${parsed.data.pet_id}/${crypto.randomUUID()}-${safeName}`;
 
   const { error: uploadError } = await supabase.storage
     .from(DOCUMENT_BUCKET)
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, optimised?.data ?? file, {
+      contentType: optimised?.contentType ?? file.type,
+      upsert: false,
+    });
 
   if (uploadError) return failure(`Couldn't upload that file: ${uploadError.message}`);
 
+  // These describe the stored object, not what was submitted — the panel shows
+  // `file_size`, and after compression the two are no longer the same number.
   const { error: insertError } = await supabase.from("documents").insert({
     pet_id: parsed.data.pet_id,
     storage_path: path,
     file_name: safeName,
-    file_size: file.size,
-    mime_type: file.type,
+    file_size: optimised?.data.length ?? file.size,
+    mime_type: optimised?.contentType ?? file.type,
     document_type: parsed.data.document_type,
   });
 

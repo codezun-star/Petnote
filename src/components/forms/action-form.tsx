@@ -1,6 +1,15 @@
 "use client";
 
-import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useActionState,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useFormStatus } from "react-dom";
 
 import { AnimatedFormMessage } from "@/components/motion/error-message";
@@ -10,20 +19,50 @@ import { Button } from "@/components/ui/button";
 import type { ActionState } from "@/lib/actions/shared";
 import { cn } from "@/lib/utils";
 
+/**
+ * Lets an input mark the form busy while it does async work of its own.
+ *
+ * File compression is the only user today: submitting while it is still
+ * running would send the untouched original, so the submit button waits.
+ */
+const BusyContext = createContext<((delta: number) => void) | null>(null);
+
+/**
+ * Runs `work` with the surrounding form held busy. Outside an `ActionForm`
+ * there is nothing to hold, so the work just runs.
+ */
+export function useFormBusy() {
+  const bump = useContext(BusyContext);
+
+  return useCallback(
+    async <T,>(work: () => Promise<T>): Promise<T> => {
+      bump?.(1);
+      try {
+        return await work();
+      } finally {
+        bump?.(-1);
+      }
+    },
+    [bump],
+  );
+}
+
 function SubmitButton({
   label,
   pendingLabel,
   variant,
   className,
+  busy,
 }: {
   label: string;
   pendingLabel: string;
   variant?: "default" | "accent" | "fresh" | "outline";
   className?: string;
+  busy?: boolean;
 }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" variant={variant} disabled={pending} className={className}>
+    <Button type="submit" variant={variant} disabled={pending || busy} className={className}>
       {pending ? pendingLabel : label}
     </Button>
   );
@@ -60,6 +99,8 @@ export function ActionForm({
 }: ActionFormProps) {
   const [state, formAction] = useActionState<ActionState, FormData>(action, {});
   const formRef = useRef<HTMLFormElement>(null);
+  const [busyCount, setBusyCount] = useState(0);
+  const bump = useCallback((delta: number) => setBusyCount((count) => count + delta), []);
 
   useEffect(() => {
     if (resetOnSuccess && state.success) formRef.current?.reset();
@@ -84,10 +125,15 @@ export function ActionForm({
         </AnimatedFormMessage>
       ) : null}
 
-      {children}
+      <BusyContext.Provider value={bump}>{children}</BusyContext.Provider>
 
       <div className={cn("flex items-center gap-3", footerClassName)}>
-        <SubmitButton label={submitLabel} pendingLabel={pendingLabel} variant={submitVariant} />
+        <SubmitButton
+          label={submitLabel}
+          pendingLabel={pendingLabel}
+          variant={submitVariant}
+          busy={busyCount > 0}
+        />
         {footer}
       </div>
     </form>
