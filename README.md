@@ -135,6 +135,38 @@ request-scoped one, so the check can't rewrite the caller's session cookies,
 and the session it mints is revoked immediately (`scope: "local"` — `global`
 would sign the user out of the browser they're sitting in front of).
 
+### Changing a username or an email address
+
+Both live in Settings, and they are guarded very differently on purpose.
+
+**Username** is public and costs nobody their account, so it changes on the
+spot with no password. Availability is checked against
+`is_username_available()`, but only when the handle actually differs — the
+unique index is on `lower(username)`, so re-capitalising your own handle
+collides with nothing. A `23505` from that index is still handled: two people
+can pass the availability check at the same instant and only one can win.
+
+**Email** is the account recovery mechanism, so it takes two things:
+
+1. **The current password.** The session on its own is deliberately not
+   enough. If it were, a hijacked session could move the address and take the
+   account outright — the very thing password reset exists to prevent.
+2. **Supabase's confirmation step**, via `updateUser({ email })`. The old
+   address keeps working until the emailed link is opened, so a typo is
+   recoverable rather than a lockout.
+
+With *Secure email change* on — Supabase's default — a link goes to both the
+old and the new address and the change applies only after both are opened.
+`/auth/callback` knows about this: the first link comes back with a message
+and no code, which is progress rather than a broken link, and it redirects to
+Settings with a `notice` the page maps to fixed copy (never echoing the query
+string — a link that can put arbitrary text in an alert on a signed-in page is
+a phishing surface).
+
+Nothing in the database stores the email — it lives on `auth.users` — so there
+is no second copy to keep in sync. Reminders and `email_for_username()` both
+read through to `auth.users` and follow the change automatically.
+
 ## Plans
 
 Limits live in `src/lib/plans.ts` and are enforced **server-side** in the relevant Server Action —

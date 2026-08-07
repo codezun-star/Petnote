@@ -7,6 +7,7 @@ import { newPasswordSchema, passwordSchema } from "@/lib/password";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/site";
+import { usernameSchema } from "@/lib/username";
 
 export type AuthFormState = {
   error?: string;
@@ -14,17 +15,6 @@ export type AuthFormState = {
 };
 
 const emailSchema = z.string().trim().min(1, "Enter your email address.").email("Enter a valid email address.");
-
-/** Mirrors the `owner_profiles_username_format` constraint in the database. */
-const usernameSchema = z
-  .string()
-  .trim()
-  .min(3, "Usernames must be at least 3 characters long.")
-  .max(30, "Usernames can be at most 30 characters long.")
-  .regex(
-    /^[a-zA-Z][a-zA-Z0-9._-]{2,29}$/,
-    "Usernames must start with a letter and use only letters, numbers, dots, hyphens or underscores.",
-  );
 
 const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Enter your name.").max(120),
