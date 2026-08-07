@@ -112,6 +112,29 @@ Two consequences worth knowing:
 Failed logins always return one message regardless of cause, so the form can't
 be used to probe which usernames exist.
 
+### Passwords
+
+One rule, defined once in `src/lib/password.ts` and applied at signup, at reset
+and on change: at least 8 characters, typed twice.
+
+There are two ways to change one:
+
+- **Forgotten** — `/forgot-password` emails a link that lands on
+  `/auth/callback?next=/reset-password`. The callback exchanges the link's code
+  for a session, so the visitor arrives at `/reset-password` already signed in;
+  that session is the proof of identity, which is why the form asks only for
+  the new password. No session means the link was used, expired, or was opened
+  in a different browser than the one that requested it — the PKCE code
+  verifier is a cookie — and the page says so instead of failing silently.
+- **Remembered** — the Password card in Settings, which additionally requires
+  the current password. The session alone is not enough there: a hijacked
+  session must not be able to lock the real owner out.
+
+Verifying the current password signs in on a *throwaway* client rather than the
+request-scoped one, so the check can't rewrite the caller's session cookies,
+and the session it mints is revoked immediately (`scope: "local"` — `global`
+would sign the user out of the browser they're sitting in front of).
+
 ## Plans
 
 Limits live in `src/lib/plans.ts` and are enforced **server-side** in the relevant Server Action —

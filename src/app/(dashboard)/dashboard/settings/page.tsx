@@ -7,7 +7,9 @@ import { Field, FieldGrid } from "@/components/forms/field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { changePassword } from "@/lib/actions/account";
 import { updateOwnerProfile } from "@/lib/actions/profile";
+import { MIN_PASSWORD_LENGTH } from "@/lib/password";
 import { requireAccount } from "@/lib/queries";
 
 export const metadata: Metadata = {
@@ -155,6 +157,62 @@ export default async function SettingsPage() {
                 </span>
               </label>
             </div>
+          </ActionForm>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardContent className="p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Password
+          </h2>
+          <ActionForm
+            action={changePassword}
+            submitLabel="Update password"
+            pendingLabel="Updating…"
+            resetOnSuccess
+            className="space-y-4"
+          >
+            <Field
+              label="Current password"
+              htmlFor="currentPassword"
+              hint="Asked for so a borrowed session can't lock you out of your own account."
+            >
+              <Input
+                id="currentPassword"
+                name="currentPassword"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+              />
+            </Field>
+            <FieldGrid>
+              <Field
+                label="New password"
+                htmlFor="password"
+                hint={`At least ${MIN_PASSWORD_LENGTH} characters.`}
+              >
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  required
+                />
+              </Field>
+              <Field label="Confirm new password" htmlFor="confirmPassword">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  required
+                />
+              </Field>
+            </FieldGrid>
           </ActionForm>
         </CardContent>
       </Card>

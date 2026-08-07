@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { newPasswordSchema, passwordSchema } from "@/lib/password";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/site";
@@ -29,7 +30,7 @@ const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Enter your name.").max(120),
   username: usernameSchema,
   email: emailSchema,
-  password: z.string().min(8, "Passwords must be at least 8 characters long."),
+  password: passwordSchema,
 });
 
 const signInSchema = z.object({
@@ -243,12 +244,68 @@ async function requestPasswordResetImpl(formData: FormData): Promise<AuthFormSta
   }
 
   const supabase = await createClient();
+  // The link signs the visitor in and drops them straight on the form that
+  // actually sets a new password — landing anywhere else leaves them logged in
+  // with the password they've already forgotten.
   await supabase.auth.resetPasswordForEmail(parsed.data, {
-    redirectTo: absoluteUrl("/auth/callback?next=/dashboard/settings"),
+    redirectTo: absoluteUrl("/auth/callback?next=/reset-password"),
   });
 
   // Always the same response, whether or not the address is registered.
   return { notice: "If that address has a Petnote account, a password reset link is on its way." };
+}
+
+export async function updatePassword(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  return guard(
+    () => updatePasswordImpl(formData),
+    "We couldn't update your password. Please try again.",
+  );
+}
+
+/**
+ * Sets a new password for whoever the reset link signed in.
+ *
+ * Clicking the emailed link is what proves identity — it exchanged a one-time
+ * code for a session — so no current password is asked for here. The session
+ * is still checked: a link that was already used, expired, or opened in a
+ * different browser leaves no session behind, and that has to say so rather
+ * than silently doing nothing.
+ */
+async function updatePasswordImpl(formData: FormData): Promise<AuthFormState> {
+  const parsed = newPasswordSchema.safeParse({
+    password: formData.get("password") ?? "",
+    confirmPassword: formData.get("confirmPassword") ?? "",
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Please check the form and try again." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      error:
+        "That reset link has expired or has already been used. Request a new one and open it in the same browser.",
+    };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+
+  if (error) {
+    console.error("[auth] Password update failed", error);
+    return { error: toMessage(error, "We couldn't update your password. Please try again.") };
+  }
+
+  return {
+    notice: "Your password has been updated. You're signed in — you can head to your dashboard.",
+  };
 }
 
 export async function signOut(): Promise<void> {
