@@ -56,7 +56,7 @@ function SubmitButton({
 }: {
   label: string;
   pendingLabel: string;
-  variant?: "default" | "accent" | "fresh" | "outline";
+  variant?: "default" | "accent" | "fresh" | "outline" | "danger";
   className?: string;
   busy?: boolean;
 }) {
@@ -73,7 +73,7 @@ type ActionFormProps = {
   children: ReactNode;
   submitLabel: string;
   pendingLabel?: string;
-  submitVariant?: "default" | "accent" | "fresh" | "outline";
+  submitVariant?: "default" | "accent" | "fresh" | "outline" | "danger";
   /** Clears the inputs after a successful submit — right for "add" forms. */
   resetOnSuccess?: boolean;
   /** Extra controls rendered next to the submit button (e.g. a Cancel link). */

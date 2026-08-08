@@ -112,6 +112,94 @@ Two consequences worth knowing:
 Failed logins always return one message regardless of cause, so the form can't
 be used to probe which usernames exist.
 
+### Passwords
+
+One rule, defined once in `src/lib/password.ts` and applied at signup, at reset
+and on change: at least 8 characters, typed twice.
+
+There are two ways to change one:
+
+- **Forgotten** — `/forgot-password` emails a link that lands on
+  `/auth/callback?next=/reset-password`. The callback exchanges the link's code
+  for a session, so the visitor arrives at `/reset-password` already signed in;
+  that session is the proof of identity, which is why the form asks only for
+  the new password. No session means the link was used, expired, or was opened
+  in a different browser than the one that requested it — the PKCE code
+  verifier is a cookie — and the page says so instead of failing silently.
+- **Remembered** — the Password card in Settings, which additionally requires
+  the current password. The session alone is not enough there: a hijacked
+  session must not be able to lock the real owner out.
+
+Verifying the current password signs in on a *throwaway* client rather than the
+request-scoped one, so the check can't rewrite the caller's session cookies,
+and the session it mints is revoked immediately (`scope: "local"` — `global`
+would sign the user out of the browser they're sitting in front of).
+
+### Changing a username or an email address
+
+Both live in Settings, and they are guarded very differently on purpose.
+
+**Username** is public and costs nobody their account, so it changes on the
+spot with no password. Availability is checked against
+`is_username_available()`, but only when the handle actually differs — the
+unique index is on `lower(username)`, so re-capitalising your own handle
+collides with nothing. A `23505` from that index is still handled: two people
+can pass the availability check at the same instant and only one can win.
+
+**Email** is the account recovery mechanism, so it takes two things:
+
+1. **The current password.** The session on its own is deliberately not
+   enough. If it were, a hijacked session could move the address and take the
+   account outright — the very thing password reset exists to prevent.
+2. **Supabase's confirmation step**, via `updateUser({ email })`. The old
+   address keeps working until the emailed link is opened, so a typo is
+   recoverable rather than a lockout.
+
+With *Secure email change* on — Supabase's default — a link goes to both the
+old and the new address and the change applies only after both are opened.
+`/auth/callback` knows about this: the first link comes back with a message
+and no code, which is progress rather than a broken link, and it redirects to
+Settings with a `notice` the page maps to fixed copy (never echoing the query
+string — a link that can put arbitrary text in an alert on a signed-in page is
+a phishing surface).
+
+Nothing in the database stores the email — it lives on `auth.users` — so there
+is no second copy to keep in sync. Reminders and `email_for_username()` both
+read through to `auth.users` and follow the change automatically.
+
+### Deleting an account
+
+Settings → Delete account. Three gates, because nothing here is recoverable:
+the word `DELETE` typed out in full, the current password, and only then the
+delete itself.
+
+**The database cascade does not cover storage.** Everything in Postgres hangs
+off `auth.users` with `on delete cascade` — the profile, the subscription, the
+pets, and every record under a pet — so deleting the auth user clears all of
+it in one statement. `storage.objects` has no foreign key to `auth.users` and
+is not part of that. Deleting the account on its own would leave every pet
+photo sitting in the **public-read** `pet-photos` bucket, still fetchable at
+its URL, with no session left in existence that could ever clean it up.
+
+So the action deletes stored files *first*, across both buckets, and **a
+failure there aborts the whole deletion** — the account stays exactly as it
+was and can be deleted again. The two failure modes are not symmetric: losing
+files while the account survives is recoverable by retrying, an orphaned
+public photo is not.
+
+Files are found by listing the `<owner id>/` prefix rather than by reading
+`documents.storage_path` and `pets.photo_url`. Replacing a pet's photo leaves
+the old object in the bucket with no row pointing at it, and a table-driven
+cleanup would tidy the referenced files while silently leaving those behind.
+
+Two things it deliberately does *not* do:
+
+- **Cancel the Paddle subscription.** Billing is Paddle's, and the webhook is
+  the only thing that writes `subscriptions`. A Pro account is warned in the
+  confirmation panel to cancel first, and the deletion still goes ahead.
+- **Soft delete.** `admin.deleteUser` is called without `shouldSoftDelete`, so
+  there is no shadow copy left behind.
+
 ## Plans
 
 Limits live in `src/lib/plans.ts` and are enforced **server-side** in the relevant Server Action —
