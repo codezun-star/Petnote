@@ -14,6 +14,9 @@ import { siteConfig } from "@/lib/site";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    // A stable identity string, so a later change to start_url is treated as
+    // the same installed app rather than a second one.
+    id: "/",
     name: `${siteConfig.name} — ${siteConfig.tagline}`,
     short_name: siteConfig.name,
     description: siteConfig.description,
@@ -23,6 +26,9 @@ export default function manifest(): MetadataRoute.Manifest {
     // page they installed it from.
     scope: "/",
     display: "standalone",
+    // Preferred first: a desktop install gets its own window controls, and
+    // anything that doesn't understand these falls back to `display`.
+    display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
     orientation: "portrait",
     background_color: "#ECF6FC",
     theme_color: "#17375C",

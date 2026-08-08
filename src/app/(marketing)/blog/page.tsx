@@ -4,32 +4,80 @@ import { ArrowRight } from "lucide-react";
 
 import { HoverLift } from "@/components/motion/cta";
 import { FadeIn } from "@/components/motion/primitives";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getAllPosts } from "@/lib/blog";
 import { formatLongDate } from "@/lib/format";
-import { siteConfig } from "@/lib/site";
+import { SHARE_IMAGE_SIZE, breadcrumbSchema, graph, siteShareImageUrl } from "@/lib/seo";
+import { absoluteUrl, siteConfig } from "@/lib/site";
+
+const BLOG_DESCRIPTION =
+  "Practical, vet-informed guides for pet owners: vaccination schedules, weight monitoring, record keeping by state, and what to do if your pet goes missing.";
+
+// The listing isn't a single article, so it uses the site card rather than a
+// generated one — but it has to name it, or declaring `openGraph` below would
+// drop the inherited image and leave the page with no preview.
+const BLOG_SHARE_IMAGE = {
+  url: siteShareImageUrl(),
+  width: SHARE_IMAGE_SIZE.width,
+  height: SHARE_IMAGE_SIZE.height,
+  alt: `Blog · ${siteConfig.name}`,
+};
 
 export const metadata: Metadata = {
   title: "Blog",
-  description:
-    "Practical guides on pet vaccination schedules, weight monitoring, and what to do if your pet goes missing.",
+  description: BLOG_DESCRIPTION,
   alternates: { canonical: "/blog" },
   openGraph: {
     type: "website",
     title: `Blog · ${siteConfig.name}`,
-    description:
-      "Practical guides on pet vaccination schedules, weight monitoring, and what to do if your pet goes missing.",
-    url: `${siteConfig.url}/blog`,
+    description: BLOG_DESCRIPTION,
+    url: absoluteUrl("/blog"),
+    siteName: siteConfig.name,
+    locale: "en_US",
+    images: [BLOG_SHARE_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Blog · ${siteConfig.name}`,
+    description: BLOG_DESCRIPTION,
+    images: [BLOG_SHARE_IMAGE],
   },
 };
 
 export default function BlogIndexPage() {
   const posts = getAllPosts();
 
+  const jsonLd = graph(
+    {
+      "@type": "CollectionPage",
+      name: `Blog · ${siteConfig.name}`,
+      description: BLOG_DESCRIPTION,
+      url: absoluteUrl("/blog"),
+      inLanguage: "en-US",
+      // The listing itself, so a crawler sees the set of articles without
+      // having to follow every link first.
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: posts.map((post, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: absoluteUrl(`/blog/${post.slug}`),
+          name: post.title,
+        })),
+      },
+    },
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+    ]),
+  );
+
   return (
     <FadeIn className="mx-auto w-full max-w-4xl px-4 py-14 sm:px-6 lg:py-20">
+      <JsonLd data={jsonLd} />
       <header className="mb-10">
         <h1 className="text-4xl font-bold tracking-tight text-primary">The Petnote blog</h1>
         <p className="mt-3 max-w-2xl text-lg text-muted-foreground">

@@ -15,10 +15,12 @@ import { HeroBackground } from "@/components/marketing/hero-background";
 import { HeroItem, HeroSequence } from "@/components/marketing/hero-sequence";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { AnimatedCta, HoverLift } from "@/components/motion/cta";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PLAN_FEATURES, getDisplayPrice } from "@/lib/plans";
+import { faqPageSchema, graph, softwareApplicationSchema } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -26,6 +28,47 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   alternates: { canonical: "/" },
 };
+
+/**
+ * Answers to what people actually ask before signing up.
+ *
+ * This array is the single source for both the rendered section below and the
+ * FAQPage schema — they cannot drift, which is what keeps the markup eligible.
+ * Every answer states something the product genuinely does today; the plan
+ * limits quoted here come from PLAN_LIMITS.
+ */
+const FAQS = [
+  {
+    question: "Is Petnote free?",
+    answer:
+      "Yes. The Free plan covers one pet profile, the vaccine and deworming calendar, email reminders before due dates, and the Emergency Mode QR page. Pro adds unlimited pets, the complete medical and weight history, and unlimited document storage.",
+  },
+  {
+    question: "What is Emergency Mode?",
+    answer:
+      "Emergency Mode is a public web page for your pet with its own QR code, meant for a collar tag. Anyone who finds your pet can scan it with a phone camera and immediately see who to call, plus the allergies and current medications a vet would need. It is free on every plan and you can switch the link off at any time.",
+  },
+  {
+    question: "Does someone who finds my pet need to install an app?",
+    answer:
+      "No. The Emergency Mode page opens in any phone browser with no app to install and no account to create, because a stranger holding your pet will not stop to sign up for anything.",
+  },
+  {
+    question: "Is my pet's medical information private?",
+    answer:
+      "Yes. Only the Emergency Mode page is public, and it shows just contact numbers, allergies and current medications. Your full medical history, weight entries, notes and uploaded documents stay private to your account.",
+  },
+  {
+    question: "Will Petnote remind me before a vaccine is due?",
+    answer:
+      "Yes. Petnote sends one email a day covering anything due in the next week across all of your pets, and overdue items stay flagged rather than quietly ageing out. You can turn reminders off whenever you like.",
+  },
+  {
+    question: "Can I track more than one pet?",
+    answer:
+      "The Free plan covers one pet profile. Pro removes the limit, so multi-pet households can keep every animal's vaccines, medical history, weight and documents in the same account.",
+  },
+];
 
 const FEATURES = [
   {
@@ -71,6 +114,8 @@ export default function LandingPage() {
 
   return (
     <>
+      <JsonLd data={graph(softwareApplicationSchema(), faqPageSchema(FAQS))} />
+
       {/* Scroll-driven reveals for every [data-reveal] element below. */}
       <ScrollReveal />
 
@@ -308,6 +353,26 @@ export default function LandingPage() {
               </HoverLift>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ — rendered from the same array that feeds the FAQPage schema. */}
+      <section id="faq" className="scroll-mt-20 border-t border-border/60">
+        <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6 lg:py-24">
+          <div className="text-center" data-reveal>
+            <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+              Common questions
+            </h2>
+          </div>
+
+          <dl className="mt-10 divide-y divide-border border-t border-border">
+            {FAQS.map((faq) => (
+              <div key={faq.question} className="py-6" data-reveal>
+                <dt className="text-lg font-semibold text-foreground">{faq.question}</dt>
+                <dd className="mt-2 leading-relaxed text-muted-foreground">{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 

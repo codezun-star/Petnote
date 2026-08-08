@@ -21,5 +21,13 @@ export function absoluteUrl(path: string = "/"): string {
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
     siteConfig.url;
 
-  return new URL(path, base).toString();
+  const url = new URL(path, base);
+
+  // Next emits the home page's <link rel="canonical"> without a trailing
+  // slash. Returning the same form here keeps the canonical, the sitemap entry
+  // and the JSON-LD `url` byte-identical — a mismatch is harmless to rankings
+  // but shows up as noise in Search Console.
+  if (url.pathname === "/" && !url.search && !url.hash) return url.origin;
+
+  return url.toString();
 }

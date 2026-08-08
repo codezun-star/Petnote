@@ -7,11 +7,20 @@ import { ArrowLeft } from "lucide-react";
 
 import { mdxComponents } from "@/components/blog/mdx";
 import { FadeIn } from "@/components/motion/primitives";
+import { JsonLd } from "@/components/seo/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getPost, getPostSlugs } from "@/lib/blog";
 import { formatLongDate } from "@/lib/format";
-import { siteConfig } from "@/lib/site";
+import {
+  SHARE_IMAGE_SIZE,
+  articleSchema,
+  breadcrumbSchema,
+  faqPageSchema,
+  graph,
+  shareImageUrl,
+} from "@/lib/seo";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 
 /** Posts are files on disk, so every route is known at build time. */
 export function generateStaticParams() {
@@ -25,7 +34,14 @@ export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promis
   const post = getPost(slug);
   if (!post) return { title: "Post not found" };
 
-  const url = `${siteConfig.url}/blog/${post.slug}`;
+  // Absolute, and the same URL the Article schema advertises. Scrapers reject
+  // relative og:image values outright, which is what broke link previews.
+  const image = {
+    url: shareImageUrl(post.slug),
+    width: SHARE_IMAGE_SIZE.width,
+    height: SHARE_IMAGE_SIZE.height,
+    alt: post.title,
+  };
 
   return {
     title: post.title,
@@ -37,17 +53,20 @@ export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promis
       type: "article",
       title: post.title,
       description: post.description,
-      url,
+      url: absoluteUrl(`/blog/${post.slug}`),
+      siteName: siteConfig.name,
+      locale: "en_US",
       publishedTime: post.date,
+      modifiedTime: post.updated,
       authors: [post.author],
       tags: post.tags,
-      images: post.coverImage ? [{ url: post.coverImage, alt: post.title }] : undefined,
+      images: [image],
     },
     twitter: {
-      card: post.coverImage ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: post.title,
       description: post.description,
-      images: post.coverImage ? [post.coverImage] : undefined,
+      images: [image],
     },
   };
 }
@@ -57,26 +76,36 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
   const post = getPost(slug);
   if (!post) notFound();
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.description,
-    datePublished: post.date,
-    author: { "@type": "Organization", name: post.author },
-    publisher: { "@type": "Organization", name: siteConfig.name },
-    mainEntityOfPage: `${siteConfig.url}/blog/${post.slug}`,
-    ...(post.coverImage ? { image: post.coverImage } : {}),
-  };
+  // The share card doubles as the article's schema image, so both surfaces
+  // describe the same artwork rather than drifting apart.
+  const imageUrl = shareImageUrl(post.slug);
+
+  const jsonLd = graph(
+    articleSchema({
+      title: post.title,
+      description: post.description,
+      path: `/blog/${post.slug}`,
+      datePublished: post.date,
+      dateModified: post.updated,
+      author: post.author,
+      imageUrl,
+      tags: post.tags,
+      wordCount: post.wordCount,
+    }),
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+      { name: post.title, path: `/blog/${post.slug}` },
+    ]),
+    // Only emitted when the post actually renders the questions below.
+    ...(post.faqs.length > 0 ? [faqPageSchema(post.faqs)] : []),
+  );
 
   // Reading page: one gentle fade on load, and nothing scroll-driven that
   // would compete with the text.
   return (
     <FadeIn as="article" distance={6} className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 lg:py-20">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
 
       <Button asChild variant="ghost" size="sm" className="-ml-2 mb-6">
         <Link href="/blog">
@@ -118,6 +147,27 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
           options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
         />
       </div>
+
+      {/*
+        Rendered from the same array that feeds the FAQPage schema above.
+        Answer engines quote this section directly, and Google requires the
+        questions to be visible on the page for the markup to be eligible.
+      */}
+      {post.faqs.length > 0 ? (
+        <section className="mt-14" aria-labelledby="faq-heading">
+          <h2 id="faq-heading" className="text-2xl font-bold tracking-tight text-foreground">
+            Frequently asked questions
+          </h2>
+          <dl className="mt-6 divide-y divide-border border-t border-border">
+            {post.faqs.map((faq) => (
+              <div key={faq.question} className="py-5">
+                <dt className="text-base font-semibold text-foreground">{faq.question}</dt>
+                <dd className="mt-2 leading-relaxed text-foreground/90">{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
 
       <aside className="mt-14 rounded-xl border border-border bg-card p-6">
         <h2 className="text-lg font-semibold text-foreground">Keep this in one place</h2>

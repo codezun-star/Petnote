@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
+import { JsonLd } from "@/components/seo/json-ld";
+import { graph, organizationSchema, websiteSchema } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -73,6 +75,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="flex min-h-full flex-col font-sans">
+        {/*
+          Publisher identity for every route, including the dashboard — the
+          nodes are referenced by @id from the article and product schemas on
+          the public pages, so the graph stays connected wherever a crawler
+          enters the site.
+        */}
+        <JsonLd data={graph(organizationSchema(), websiteSchema())} />
         <MotionProvider>{children}</MotionProvider>
         <RegisterServiceWorker />
       </body>

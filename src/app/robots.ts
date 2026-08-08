@@ -13,9 +13,12 @@ export default function robots(): MetadataRoute.Robots {
         "/dashboard",
         "/emergency",
         "/api",
+        "/auth",
         "/login",
         "/signup",
         "/forgot-password",
+        // Carries a recovery token in the URL — must never reach an index.
+        "/reset-password",
         "/offline",
       ],
     },
