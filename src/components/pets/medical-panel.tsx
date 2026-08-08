@@ -1,9 +1,11 @@
-import { Pill, Stethoscope } from "lucide-react";
+import Link from "next/link";
+import { Pill, Sparkles, Stethoscope } from "lucide-react";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { DeleteButton } from "@/components/forms/delete-button";
 import { Field, FieldGrid, SelectField } from "@/components/forms/field";
 import { RecordList, RecordRow } from "@/components/motion/record-list";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +20,8 @@ import {
   setMedicationActive,
 } from "@/lib/actions/medical";
 import type { MedicalRecord, Medication } from "@/lib/database.types";
-import { MEDICAL_RECORD_TYPE_LABELS, formatDate, todayIso } from "@/lib/format";
+import { MEDICAL_RECORD_TYPE_LABELS, formatDate, pluralize, todayIso } from "@/lib/format";
+import type { PlanLimits } from "@/lib/plans";
 
 const RECORD_TYPE_OPTIONS = Object.entries(MEDICAL_RECORD_TYPE_LABELS).map(([value, label]) => ({
   value,
@@ -29,13 +32,24 @@ export function MedicalPanel({
   petId,
   records,
   medications,
+  limits,
+  hiddenRecordCount,
+  hiddenMedicationCount,
 }: {
   petId: string;
+  /** Newest first, already trimmed to the plan's history window. */
   records: MedicalRecord[];
+  /** Newest first, already trimmed to the plan's history window. */
   medications: Medication[];
+  limits: PlanLimits;
+  /** Visits beyond the Free plan's window, so we can say what's hidden. */
+  hiddenRecordCount: number;
+  /** Medications beyond the Free plan's window. */
+  hiddenMedicationCount: number;
 }) {
   const activeMedications = medications.filter((medication) => medication.active);
   const pastMedications = medications.filter((medication) => !medication.active);
+  const entryLimit = limits.medicalHistoryEntries;
 
   return (
     <div className="space-y-6">
@@ -43,9 +57,13 @@ export function MedicalPanel({
         <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>Visits, surgeries & procedures</CardTitle>
-            <CardDescription>The full history a new vet would want to see.</CardDescription>
+            <CardDescription>
+              {entryLimit === null
+                ? "The full history a new vet would want to see."
+                : `The ${entryLimit} most recent entries on your Free plan.`}
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             {records.length === 0 ? (
               <EmptyState
                 icon={<Stethoscope />}
@@ -94,6 +112,8 @@ export function MedicalPanel({
                 ))}
               </RecordList>
             )}
+
+            <HiddenHistoryNotice count={hiddenRecordCount} noun="record" limit={entryLimit} />
           </CardContent>
         </Card>
 
@@ -162,6 +182,12 @@ export function MedicalPanel({
                 ) : null}
               </>
             )}
+
+            <HiddenHistoryNotice
+              count={hiddenMedicationCount}
+              noun="medication"
+              limit={entryLimit}
+            />
           </CardContent>
         </Card>
 
@@ -210,6 +236,41 @@ export function MedicalPanel({
         </Card>
       </div>
     </div>
+  );
+}
+
+/**
+ * Tells a Free user what the plan is holding back, without implying it's gone.
+ *
+ * The wording matters: these rows are still in the database and come straight
+ * back on upgrade, so this says "hidden", never "deleted".
+ */
+function HiddenHistoryNotice({
+  count,
+  noun,
+  limit,
+}: {
+  count: number;
+  noun: "record" | "medication";
+  limit: number | null;
+}) {
+  if (count <= 0 || limit === null) return null;
+
+  return (
+    <Alert variant="info">
+      <Sparkles />
+      <AlertDescription>
+        <span className="font-semibold">
+          {pluralize(count, `older ${noun}`)} {count === 1 ? "is" : "are"} hidden.
+        </span>{" "}
+        The Free plan shows the {limit} most recent. Pro shows the complete medical history — and
+        your older entries are still saved, waiting for you.{" "}
+        <Link href="/dashboard/billing" className="font-semibold underline underline-offset-2">
+          See Pro
+        </Link>
+        .
+      </AlertDescription>
+    </Alert>
   );
 }
 

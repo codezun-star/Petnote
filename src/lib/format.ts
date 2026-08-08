@@ -106,6 +106,16 @@ export function formatWeight(weight: number | null | undefined, unit: string = "
   return `${Number(weight).toFixed(1)} ${unit}`;
 }
 
+/**
+ * "1 document" / "3 documents".
+ *
+ * Plan allowances reach down to 1, so copy that interpolates a limit can't
+ * assume a trailing "s". Pass `plural` for anything that isn't regular.
+ */
+export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export function formatFileSize(bytes: number | null): string {
   if (!bytes) return "—";
   if (bytes < 1024) return `${bytes} B`;

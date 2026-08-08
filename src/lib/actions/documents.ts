@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { pluralize } from "@/lib/format";
 import { DOCUMENT_COMPRESSION } from "@/lib/image-profiles";
 import { MAX_UPLOAD_BYTES, isWithinLimit } from "@/lib/plans";
 import { countDocuments, requireAccount } from "@/lib/queries";
@@ -62,10 +63,14 @@ export async function uploadDocument(
   const account = await requireAccount();
   if (!(await assertPetOwnership(parsed.data.pet_id))) return failure("That pet could not be found.");
 
+  // The last line of defence for the document allowance — the panel hides the
+  // form once you're at the limit, but nothing stops a second tab (or a replayed
+  // request) from posting anyway.
+  const { maxDocuments } = account.limits;
   const documentCount = await countDocuments();
-  if (!isWithinLimit(documentCount, account.limits.maxDocuments)) {
+  if (maxDocuments !== null && !isWithinLimit(documentCount, maxDocuments)) {
     return failure(
-      `The Free plan stores up to ${account.limits.maxDocuments} documents. Upgrade to Pro for unlimited storage.`,
+      `The Free plan stores ${pluralize(maxDocuments, "document")}. Upgrade to Pro for unlimited storage.`,
     );
   }
 

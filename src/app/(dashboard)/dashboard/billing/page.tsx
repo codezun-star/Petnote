@@ -79,7 +79,7 @@ export default async function BillingPage(props: PageProps<"/dashboard/billing">
           </div>
         </CardHeader>
         <CardContent>
-          <dl className="grid gap-4 sm:grid-cols-3">
+          <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <UsageStat
               label="Pets"
               used={petCount}
@@ -90,6 +90,14 @@ export default async function BillingPage(props: PageProps<"/dashboard/billing">
               used={documentCount}
               limit={account.limits.maxDocuments}
             />
+            <div>
+              <dt className="text-sm text-muted-foreground">Medical history</dt>
+              <dd className="mt-1 text-lg font-semibold text-foreground">
+                {account.limits.medicalHistoryEntries === null
+                  ? "Complete"
+                  : `Last ${account.limits.medicalHistoryEntries}`}
+              </dd>
+            </div>
             <div>
               <dt className="text-sm text-muted-foreground">Weight history</dt>
               <dd className="mt-1 text-lg font-semibold text-foreground">

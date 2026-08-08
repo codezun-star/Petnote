@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EmptyState } from "@/components/ui/empty-state";
 import { deleteDocument, uploadDocument } from "@/lib/actions/documents";
 import type { PetDocument } from "@/lib/database.types";
-import { DOCUMENT_TYPE_LABELS, formatFileSize, formatLongDate } from "@/lib/format";
+import { DOCUMENT_TYPE_LABELS, formatFileSize, formatLongDate, pluralize } from "@/lib/format";
 import { DOCUMENT_COMPRESSION } from "@/lib/image-profiles";
 import { MAX_UPLOAD_BYTES, type PlanLimits } from "@/lib/plans";
 
@@ -34,7 +34,11 @@ export function DocumentsPanel({
   /** Across all pets — the document allowance is per account. */
   documentCount: number;
 }) {
-  const atLimit = limits.maxDocuments !== null && documentCount >= limits.maxDocuments;
+  const { maxDocuments } = limits;
+  const atLimit = maxDocuments !== null && documentCount >= maxDocuments;
+  // Narrowed here rather than inline: the Free allowance is a single document,
+  // so every sentence quoting it has to agree in number.
+  const allowanceLabel = maxDocuments === null ? null : pluralize(maxDocuments, "document");
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
@@ -97,9 +101,9 @@ export function DocumentsPanel({
         <CardHeader>
           <CardTitle>Upload a document</CardTitle>
           <CardDescription>
-            {limits.maxDocuments === null
+            {maxDocuments === null
               ? "Unlimited storage on your Pro plan."
-              : `${documentCount} of ${limits.maxDocuments} used on the Free plan.`}
+              : `${documentCount} of ${maxDocuments} used on the Free plan.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,8 +112,8 @@ export function DocumentsPanel({
               <Sparkles />
               <AlertDescription className="space-y-3">
                 <p>
-                  You&apos;ve used all {limits.maxDocuments} Free plan documents. Pro gives you
-                  unlimited storage.
+                  The Free plan stores {allowanceLabel}, and you&apos;ve used{" "}
+                  {documentCount === 1 ? "it" : "them all"}. Pro gives you unlimited storage.
                 </p>
                 <Button asChild variant="accent" size="sm">
                   <Link href="/dashboard/billing">See Pro</Link>

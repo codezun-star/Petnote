@@ -19,6 +19,14 @@ export type PlanLimits = {
   maxDocuments: number | null;
   /** How far back the weight chart reaches, in days. `null` means all history. */
   weightHistoryDays: number | null;
+  /**
+   * How many of the newest medical entries the Medical tab shows, counted
+   * separately for visits and for medications. `null` means the full history.
+   *
+   * Like `weightHistoryDays`, this only narrows the view. Nothing is deleted,
+   * so upgrading brings the older entries straight back.
+   */
+  medicalHistoryEntries: number | null;
   /** CSV export of weight history. */
   canExportWeightHistory: boolean;
 };
@@ -26,14 +34,16 @@ export type PlanLimits = {
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
   free: {
     maxPets: 1,
-    maxDocuments: 3,
+    maxDocuments: 1,
     weightHistoryDays: 90,
+    medicalHistoryEntries: 2,
     canExportWeightHistory: false,
   },
   pro: {
     maxPets: null,
     maxDocuments: null,
     weightHistoryDays: null,
+    medicalHistoryEntries: null,
     canExportWeightHistory: true,
   },
 };
@@ -67,6 +77,17 @@ export function isWithinLimit(current: number, max: number | null): boolean {
 }
 
 /**
+ * The slice of an already-sorted list a plan is allowed to see.
+ *
+ * Callers keep hold of the full list so they can still say how much is hidden —
+ * a view limit never removes rows, and it has to be reversible the moment the
+ * subscription flips to Pro.
+ */
+export function visibleEntries<T>(entries: T[], limit: number | null): T[] {
+  return limit === null ? entries : entries.slice(0, limit);
+}
+
+/**
  * Display price for the marketing pricing table.
  *
  * The authoritative price lives in Paddle and is what the checkout charges;
@@ -87,14 +108,15 @@ export const PLAN_FEATURES: Record<PlanId, string[]> = {
     "1 pet profile",
     "Vaccine & deworming calendar",
     "Email reminders before due dates",
-    "Full medical history & medications",
+    "2 most recent medical records & medications",
     "Weight tracking (last 3 months)",
-    "3 stored documents",
+    "1 stored document",
     "Emergency Mode page + QR code",
   ],
   pro: [
     "Unlimited pet profiles",
     "Everything in Free",
+    "Complete medical history & medications",
     "Complete weight history + CSV export",
     "Unlimited document storage",
     "Priority support",

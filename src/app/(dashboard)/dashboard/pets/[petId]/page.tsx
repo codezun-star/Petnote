@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SEX_LABELS, SPECIES_LABELS, formatAge, formatWeight } from "@/lib/format";
+import { visibleEntries } from "@/lib/plans";
 import { countDocuments, getPet, requireAccount } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -78,6 +79,18 @@ export default async function PetDetailPage(props: PageProps<"/dashboard/pets/[p
     visibleWeightLogs = allWeightLogs.filter((log) => log.logged_at >= cutoffIso);
   }
 
+  // Same deal for the medical tab: the queries above are unfiltered and both
+  // lists arrive newest-first, so trimming here is purely what gets rendered.
+  // Nothing is deleted, and a Free user who upgrades sees the full history on
+  // their next request — `medicalHistoryEntries` is null on Pro.
+  const allMedicalRecords = medicalRecords.data ?? [];
+  const allMedications = medications.data ?? [];
+  const visibleMedicalRecords = visibleEntries(
+    allMedicalRecords,
+    account.limits.medicalHistoryEntries,
+  );
+  const visibleMedications = visibleEntries(allMedications, account.limits.medicalHistoryEntries);
+
   const age = formatAge(pet.date_of_birth);
 
   return (
@@ -130,8 +143,11 @@ export default async function PetDetailPage(props: PageProps<"/dashboard/pets/[p
           medical: (
             <MedicalPanel
               petId={pet.id}
-              records={medicalRecords.data ?? []}
-              medications={medications.data ?? []}
+              records={visibleMedicalRecords}
+              medications={visibleMedications}
+              limits={account.limits}
+              hiddenRecordCount={allMedicalRecords.length - visibleMedicalRecords.length}
+              hiddenMedicationCount={allMedications.length - visibleMedications.length}
             />
           ),
           weight: (
